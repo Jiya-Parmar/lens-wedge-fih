@@ -7,6 +7,8 @@ Outputs
   data/processed/series.npz     resampled raw traces for the DTW model
   data/processed/fih_features.csv  the 14 fixture-invariant hold (FIH) statistics per trial
   data/processed/fih_series.npz    the two-channel FIH signature per trial (for FIH-kNN)
+  results/splits_random_cv.csv     outer fold of every trial in every repeat (used by every model)
+  results/splits_cross_session.csv train/test role of every trial in both cross-session directions
   results/qc_report.txt         human-readable data-quality report
 """
 import os
@@ -25,6 +27,28 @@ from src.data_loading import (EXCLUDED_COLUMNS, extract_zips_if_needed, find_tri
                               load_trial, make_target, qc_trial, to_bursts)
 from src.features import build_series, extract_features
 from src.invariant import fih_features, fih_signature
+
+
+def export_splits(meta):
+    """Write the exact evaluation splits. They depend only on labels, sessions and the seed."""
+    from sklearn.model_selection import RepeatedStratifiedKFold
+    from src.common import make_strata
+    from src.config import OUTER_REPEATS, OUTER_SPLITS, SEED
+    strata = make_strata(meta.y.to_numpy(), meta.session)
+    rskf = RepeatedStratifiedKFold(n_splits=OUTER_SPLITS, n_repeats=OUTER_REPEATS, random_state=SEED)
+    rows = []
+    for k, (_, te) in enumerate(rskf.split(np.zeros(len(meta)), strata)):
+        for i in te:
+            rows.append(dict(trial_id=meta.trial_id.iloc[i], session=meta.session.iloc[i],
+                             outcome=meta.label3.iloc[i], y=int(meta.y.iloc[i]),
+                             repeat=k // OUTER_SPLITS, test_fold=k % OUTER_SPLITS))
+    pd.DataFrame(rows).sort_values(["repeat", "test_fold", "trial_id"]).to_csv(
+        RESULTS / "splits_random_cv.csv", index=False)
+    sessions = list(pd.unique(meta.session))
+    cs = meta[["trial_id", "session", "label3", "y"]].rename(columns={"label3": "outcome"}).copy()
+    for s in sessions:
+        cs[f"train_on_{s}"] = np.where(meta.session == s, "train", "test")
+    cs.to_csv(RESULTS / "splits_cross_session.csv", index=False)
 
 
 def main():
@@ -87,6 +111,7 @@ def main():
     np.savez(DATA_PROC / "series.npz", wedge=wedges, hold=holds,
              trial_id=meta.trial_id.to_numpy().astype(str))
     fih.to_csv(DATA_PROC / "fih_features.csv", index=False)
+    export_splits(meta)
     np.savez(DATA_PROC / "fih_series.npz", sig=sigs, trial_id=meta.trial_id.to_numpy().astype(str))
 
     print("[4/4] writing QC report")

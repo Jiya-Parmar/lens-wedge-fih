@@ -19,7 +19,8 @@ resamples the test trials of each direction, scores both models on the same resa
 averages the two directions resample by resample.
 
 Outputs
-  results/session_shift.csv, session_shift_summary.csv, session_shift_paired.csv
+  results/session_shift.csv, session_shift_summary.csv, session_shift_paired.csv,
+  session_shift_scores.csv (per-trial test scores of every model, raw variant; used by the website)
 Usage
   python scripts/06_session_shift.py
 """
@@ -88,7 +89,7 @@ def main():
 
     print("Session priors (fraction seated):",
           {s: round(float(y[sess == s].mean()), 3) for s in S})
-    rows, scores, boots_by_dir = [], {}, {}
+    rows, scores, boots_by_dir, score_rows = [], {}, {}, []
     for train_s in S:
         test_s = [s for s in S if s != train_s][0]
         tr = np.flatnonzero(sess == train_s)
@@ -104,6 +105,10 @@ def main():
                 p = model.predict_proba(Xte)[:, 1]
                 if variant == "raw":
                     scores[(train_s, m)] = p
+                    score_rows += [dict(train=train_s, test=test_s, model=m, trial_id=meta.trial_id[i],
+                                        y=int(y[i]), outcome=meta.label3[i], p_seated=float(pi),
+                                        tau_ba=taus["tau_ba"], tau_safe=taus["tau_safe"])
+                                   for i, pi in zip(te, p)]
                 lo, hi, _ = bootstrap_auc(y[te], p[None, :], boots)
                 mb = pred_metrics(y[te], (p >= taus["tau_ba"]).astype(int))
                 ms = pred_metrics(y[te], (p >= taus["tau_safe"]).astype(int))
@@ -119,6 +124,7 @@ def main():
                       f"FSR@safe {ms['false_seated_rate']:.2f}")
     R = pd.DataFrame(rows)
     R.to_csv(RESULTS / "session_shift.csv", index=False)
+    pd.DataFrame(score_rows).to_csv(RESULTS / "session_shift_scores.csv", index=False)
 
     avg = R.groupby(["variant", "model"], sort=False)[["roc_auc", "ba_at_tau_ba", "sens_at_tau_safe",
                                                        "false_seated_at_tau_safe"]].mean().reset_index()

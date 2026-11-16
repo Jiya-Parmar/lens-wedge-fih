@@ -1,6 +1,9 @@
 # Fixture-invariant lens-seating verification from robot force signals
 
 ES 678 (Machine Learning, IIT Gandhinagar) course project of Jiya Udaybhai Parmar (26250019).
+
+**Website:** the full reasoning, with interactive figures, is in `docs/index.html`, published with
+GitHub Pages at https://jiya-parmar.github.io/lens-wedge-fih/. The 4-page paper is `docs/paper.pdf`.
 Paper: *Invariant Time-Series Classification under Distribution Shift: Verifying Lens Seating
 from Robot Force Signals*.
 
@@ -35,7 +38,9 @@ lens_wedge_ml/
     models.py          baselines, standard models, FIH-kNN, FIH-LR, FIHV
     evaluation.py      nested CV, thresholds, metrics, bootstrap
     common.py          loading processed data, cached distance matrices, model inputs
-  scripts/             01 ... 12, run in order (see HOW_TO_RUN.md)
+  scripts/             01 ... 13, run in order (see HOW_TO_RUN.md); 13 builds the website
+  site/template.html   website template; scripts/13_build_website.py fills it from results/
+  docs/                the published website (index.html) and the paper (paper.pdf)
   data/raw/            success.zip, failure.zip, partial_contact.zip (not in the public repo)
   data/processed/      written by step 01
   results/             every table (.csv), log (log_*.txt) and figure (figures/)
@@ -68,8 +73,12 @@ differences; within-session label-permutation test (1000 permutations).
 ## Reproduce
 
 See HOW_TO_RUN.md. In short: Python 3.10+, `pip install -r requirements.txt`, put the three data
-zips in `data/raw/`, then `bash run_all.sh` (Windows: `run_all.bat`). Every number in the paper is
-printed by a script and saved in `results/`.
+zips in `data/raw/`, then `bash run_all.sh` (Windows: `run_all.bat`). Every number in the paper and on the website
+is printed by a script and saved in `results/`; step 13 rebuilds `docs/index.html` from them.
+
+Splits are fully determined by the code: outer folds come from `RepeatedStratifiedKFold` with
+seed 42 (stratified on label x session, see `src/evaluation.py`), and every model uses the same
+folds; the fold assignment of every trial in every repeat is saved in `results/folds_main.csv`.
 
 ## Data access
 
@@ -78,15 +87,10 @@ The trial recordings come from an internship project at a robotics lab and are n
 instructor and graders can obtain the three zips from the author on request. All derived tables,
 logs and figures are included in `results/`.
 
-## AI use
+## AI use and citations
 
-See AI_USE.md.
+See AI_USE.md. Methods used: dynamic time warping (Sakoe and Chiba, 1978), nested
+cross-validation (Varma and Simon, 2006), permutation tests for classifiers (Ojala and Garriga,
+2010), scikit-learn (Pedregosa et al., 2011); invariant risk minimisation (Arjovsky et al., 2019)
+is discussed as the learned alternative.
 
-## Notes on the reported run
-
-All numbers in the paper come from the run stored in `results/`. Step 5 (ablations and the
-1000-permutation test) is slow on a single CPU, so in the stored run the permutation test was run
-in parts (`--perm-models`; each model's shuffles are drawn in a fixed order, so the result does not
-depend on how the run is split), and the ablation tables A to C are from the earlier run of the
-original six models. A full `bash run_all.sh` regenerates every file, including FIH-LR's
-permutation p-value and the FIH rows of the ablation tables.

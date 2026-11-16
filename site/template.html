@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Verifying lens seating from robot force signals, under a moved fixture</title>
+<meta name="description" content="ES 678 project by Jiya Udaybhai Parmar: can a classifier tell from force alone whether a robot has seated a spectacle lens, and does it survive a change of fixture?">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f4f6f8; --surface: #ffffff; --ink: #17212b; --muted: #566472; --rule: #d3dbe3;
+  --seated: #2a6db0; --unseated: #c23b2a; --partial: #d98a1c; --fih: #1b7f47; --fih-tint: #e6f2ea;
+  --raw: #3d4f61; --raw-tint: #e9eef3; --focus: #2a6db0;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans: "IBM Plex Sans", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f151b; --surface: #16202a; --ink: #e3e9ef; --muted: #9babbb; --rule: #2b3946;
+    --seated: #6ea9e6; --unseated: #ee7b6a; --partial: #f0b24f; --fih: #4fc486; --fih-tint: #14281d;
+    --raw: #a9b8c7; --raw-tint: #1d2935; --focus: #6ea9e6; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f151b; --surface: #16202a; --ink: #e3e9ef; --muted: #9babbb; --rule: #2b3946;
+  --seated: #6ea9e6; --unseated: #ee7b6a; --partial: #f0b24f; --fih: #4fc486; --fih-tint: #14281d;
+  --raw: #a9b8c7; --raw-tint: #1d2935; --focus: #6ea9e6; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 16px); scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--serif); font-size: 18px; line-height: 1.62;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+a { color: var(--seated); text-underline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+img, svg { max-width: 100%; }
+
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 56px; max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 32px); align-self: start; padding-top: 40px; font-family: var(--sans); font-size: 14px; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+nav.toc li { counter-increment: toc; margin: 0 0 6px; }
+nav.toc ol a { color: var(--muted); text-decoration: none; display: grid; grid-template-columns: 22px 1fr; padding: 3px 0; }
+nav.toc ol a::before { content: counter(toc); color: var(--rule); font-weight: 600; }
+nav.toc ol a:hover, nav.toc a.active { color: var(--ink); }
+nav.toc a.active::before { color: var(--fih); }
+nav.toc .home { display: block; font-weight: 600; color: var(--ink); margin-bottom: 18px; text-decoration: none; line-height: 1.35; }
+main { min-width: 0; padding: 40px 0 96px; }
+.prose { max-width: 68ch; }
+
+/* hero */
+header.hero { padding: 8px 0 24px; border-bottom: 1px solid var(--rule); margin-bottom: 8px; }
+.hero h1 { font-family: var(--sans); font-weight: 600; font-size: clamp(30px, 4.2vw, 46px); line-height: 1.08; letter-spacing: -0.015em; margin: 0 0 14px; max-width: 20ch; }
+.byline { font-family: var(--sans); font-size: 15px; color: var(--muted); margin: 0 0 22px; }
+.answer { font-size: 20px; line-height: 1.55; max-width: 62ch; margin: 0 0 22px; }
+.links { display: flex; flex-wrap: wrap; gap: 10px; font-family: var(--sans); font-size: 15px; margin: 4px 0 30px; }
+.links a { border: 1px solid var(--rule); background: var(--surface); padding: 7px 14px; border-radius: 6px; text-decoration: none; color: var(--ink); }
+.links a:hover { border-color: var(--seated); }
+
+/* sections */
+section { padding: 52px 0 8px; }
+h2 { font-family: var(--sans); font-weight: 600; font-size: 27px; line-height: 1.2; letter-spacing: -0.01em; margin: 0 0 18px; display: flex; gap: 14px; align-items: baseline; }
+h2 .n { color: var(--fih); font-size: 18px; min-width: 20px; }
+h3 { font-family: var(--sans); font-weight: 600; font-size: 19px; margin: 34px 0 10px; }
+p { margin: 0 0 16px; }
+ul.tight { margin: 0 0 16px; padding-left: 22px; }
+ul.tight li { margin-bottom: 6px; }
+.math { font-style: italic; white-space: nowrap; }
+.callout { border-left: 3px solid var(--fih); background: var(--fih-tint); padding: 14px 18px; margin: 20px 0; max-width: 68ch; }
+.callout.warn { border-color: var(--partial); background: var(--raw-tint); }
+.callout p:last-child { margin-bottom: 0; }
+.eq { font-family: var(--serif); font-size: 19px; text-align: center; margin: 14px 0 18px; font-style: italic; overflow-x: auto; }
+
+/* tables */
+.table-wrap { overflow-x: auto; margin: 16px 0 22px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: 14.5px; font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-weight: 600; color: var(--muted); font-size: 13px; vertical-align: bottom; }
+tbody tr:last-child td { border-bottom: none; }
+tr.fih td { background: var(--fih-tint); }
+td.best { font-weight: 600; }
+.cap { font-family: var(--sans); font-size: 14px; color: var(--muted); margin: -8px 0 20px; max-width: 72ch; line-height: 1.5; }
+
+/* widgets */
+.widget { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 18px 14px; margin: 18px 0 10px; font-family: var(--sans); }
+.widget .title { font-weight: 600; font-size: 16px; margin: 0 0 4px; }
+.widget .hint { color: var(--muted); font-size: 14px; margin: 0 0 14px; line-height: 1.45; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; margin-bottom: 14px; font-size: 14px; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 7px; overflow: hidden; }
+.seg button { font: inherit; font-size: 14px; border: 0; background: transparent; color: var(--ink); padding: 6px 12px; cursor: pointer; border-right: 1px solid var(--rule); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+select { font: inherit; font-size: 14px; color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: 7px; padding: 6px 8px; }
+input[type=range] { width: 100%; accent-color: var(--fih); }
+.slider-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; font-size: 14px; margin: 4px 0 12px; }
+.slider-row output { font-variant-numeric: tabular-nums; min-width: 44px; text-align: right; font-weight: 600; }
+.btn { font: inherit; font-size: 13.5px; border: 1px solid var(--rule); background: var(--surface); color: var(--ink); border-radius: 7px; padding: 5px 10px; cursor: pointer; }
+.btn:hover { border-color: var(--seated); }
+.split { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; align-items: start; }
+.readout { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
+.readout div { border-top: 2px solid var(--rule); padding-top: 6px; }
+.readout b { display: block; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.readout span { font-size: 12.5px; color: var(--muted); line-height: 1.3; display: block; }
+.readout .bad b { color: var(--unseated); }
+.readout .good b { color: var(--fih); }
+.verdict { font-size: 14.5px; margin-top: 12px; line-height: 1.5; min-height: 44px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); margin-top: 6px; }
+.legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+.legend i.dot { width: 9px; height: 9px; border-radius: 50%; }
+.legend i.dash { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px) !important; height: 2px; }
+svg text { font-family: var(--sans); fill: var(--muted); font-size: 11px; }
+svg .axis line, svg .axis path { stroke: var(--rule); }
+svg .grid { stroke: var(--rule); stroke-width: 1; opacity: 0.6; }
+figure { margin: 22px 0; }
+figure img { display: block; border-radius: 8px; border: 1px solid var(--rule); background: #fff; }
+figcaption { font-family: var(--sans); font-size: 14px; color: var(--muted); margin-top: 8px; line-height: 1.5; max-width: 72ch; }
+.two { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: center; }
+footer { border-top: 1px solid var(--rule); margin-top: 60px; padding-top: 20px; font-family: var(--sans); font-size: 14px; color: var(--muted); }
+code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.86em; background: var(--raw-tint); padding: 1px 5px; border-radius: 4px; }
+pre { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+
+@media (max-width: 960px) {
+  .layout { grid-template-columns: 1fr; gap: 0; padding: 0 18px; }
+  nav.toc { position: static; padding-top: 22px; }
+  nav.toc ol { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  nav.toc ol a { display: inline-grid; }
+  .split, .two { grid-template-columns: 1fr; }
+  .readout { grid-template-columns: repeat(2, 1fr); }
+  body { font-size: 17px; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Sections">
+  <a class="home" href="#top">Lens seating under a moved fixture</a>
+  <ol>
+    <li><a href="#question">The question</a></li>
+    <li><a href="#data">The data</a></li>
+    <li><a href="#prep">Preprocessing</a></li>
+    <li><a href="#models">Baselines and models</a></li>
+    <li><a href="#evaluation">Evaluation design</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#errors">Errors</a></li>
+    <li><a href="#depth">Deeper analysis</a></li>
+    <li><a href="#limits">Limitations</a></li>
+    <li><a href="#reproduce">Reproduce</a></li>
+  </ol>
+</nav>
+
+<main id="top">
+<header class="hero">
+  <h1>Can a robot tell from force alone that a lens is seated, after its fixture has moved?</h1>
+  <p class="byline">Jiya Udaybhai Parmar (26250019), ES 678 Machine Learning, IIT Gandhinagar, November 2026</p>
+  <p class="answer">Within one recording session, yes: nearest neighbours on the force curves separate seated from unseated lenses with ROC-AUC 0.855. Trained on one session and tested on the other, the same model falls to chance (0.479), because the fixture moved and turned between sessions. Describing the hold phase with quantities that a moved fixture provably cannot change brings cross-session AUC back to 0.698 to 0.760 with the same learners, at a measured cost within a session.</p>
+
+  <div class="widget" id="hero-widget">
+    <p class="title">The same lenses, two ways of looking at the hold</p>
+    <p class="hint">Mean axial force during the 5 s hold, by session and outcome. Switch views to see what the fixture change does.</p>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Signal view">
+        <button type="button" data-view="raw" aria-pressed="true">Raw force f<sub>z</sub></button>
+        <button type="button" data-view="inv" aria-pressed="false">Invariant change a(t)</button>
+      </div>
+    </div>
+    <div id="hero-chart"></div>
+    <div class="legend" id="hero-legend"></div>
+    <p class="verdict" id="hero-text"></p>
+  </div>
+  <div class="links">
+    <a href="paper.pdf">Read the 4-page paper (PDF)</a>
+    <a class="repo-link" href="#reproduce">Code, data splits and all results on GitHub</a>
+  </div>
+</header>
+
+<section id="question">
+  <h2><span class="n">1</span>The question</h2>
+  <div class="two">
+    <figure style="margin:0"><img src="__PIPELINE_IMG__" alt="Illustration of the robotic lens insertion pipeline: see, pick, wedge and verify, snap-fit." width="300" height="236"><figcaption>The task (illustration from the internship project that collected the data).</figcaption></figure>
+    <div class="prose">
+      <p>A Franka FR3 arm pushes a transparent spectacle lens into the groove of a frame (the <em>wedge</em>), holds still for about 5 s (the <em>hold</em>) and then does a harder snap-fit. Snap-fitting a lens that is not seated can crack it, and a camera cannot see whether a transparent lens is seated. The decision has to come from force.</p>
+    </div>
+  </div>
+  <div class="prose">
+    <ul class="tight">
+      <li><strong>One row</strong> is one trial: one wedge attempt and the hold that follows it.</li>
+      <li><strong>Target:</strong> 1 if the operator labelled the trial a success (seated), 0 for failure or partial contact, because neither is safe to snap-fit.</li>
+      <li><strong>When the prediction is made:</strong> after the hold, before the snap-fit, from the force and motion logged up to that moment.</li>
+    </ul>
+    <p>The question has two parts. First, does the force signal discriminate seated from unseated lenses? Second, does that still hold in a new session where the fixture sits somewhere else? Deployment needs the second, and ordinary random cross-validation cannot answer it, because every training fold then contains trials from both sessions.</p>
+    <p><strong>Limits of the claim.</strong> One robot, one frame and lens type, two sessions, one labelling operator. The results are predictive, not causal.</p>
+  </div>
+</section>
+
+<section id="data">
+  <h2><span class="n">2</span>The data</h2>
+  <div class="prose">
+    <p><strong>Source and access.</strong> Force recordings from my internship project. There is no force sensor: the wrench (f<sub>x</sub>, f<sub>y</sub>, f<sub>z</sub>) is estimated from joint torques and expressed in the robot base frame, with z vertical. The recordings are not public; course staff can get them from me (see <a href="#reproduce">Reproduce</a>).</p>
+  </div>
+  <div class="table-wrap"><table id="tbl-data"></table></div>
+  <p class="cap">Seated rates differ strongly between sessions, which matters for metric choice and for thresholds.</p>
+  <div class="prose">
+    <p><strong>Key variables.</strong> About 1,600 samples per trial: time, phase (wedge or hold), the three force components with and without filtering, force magnitude, and the end-effector pose. Metadata give the rim position and wedge target of the fixture.</p>
+    <p><strong>Quality checks</strong> (script 01): no missing values, exactly one attempt per trial, labels agree with the folder they came from, controller settings are constant. One trial has a 25.5 s wedge against a median of 4 s; it is kept and flagged rather than silently dropped. The logger records in <em>bursts</em> of about 55 samples at 1 kHz separated by 0.27 s gaps, which shapes the preprocessing below.</p>
+    <p><strong>The issue that drives the project.</strong> From metadata alone, without looking at labels: between 7 Aug and 10 Aug the rim moved <span id="geo-shift"></span> cm sideways and the horizontal approach direction turned from <span id="geo-yaw"></span>. So absolute force levels and the sideways force direction change with the session, as the chart at the top shows.</p>
+  </div>
+</section>
+
+<section id="prep">
+  <h2><span class="n">3</span>Preprocessing, and why</h2>
+  <div class="prose">
+    <ul class="tight">
+      <li><strong>Burst averaging.</strong> Each burst becomes one point (about 16 per hold). Samples inside a burst are not independent measurements of the slow force trend, and averaging removes the gap structure. The spread inside each burst is kept as a vibration measurement.</li>
+      <li><strong>Physics-motivated features.</strong> 83 features in five groups: wedge force (W, 20), hold force (H, 47), wedge-to-hold change (X, 4), within-burst vibration (V, 7) and position (P, 5). The main set W+H+X+V has 78.</li>
+      <li><strong>Exclusions.</strong> Position, rim and target coordinates and absolute pose are dropped from the main set, because they are constant within a session and would let a model recognise the session instead of the lens state.</li>
+      <li><strong>Traces for distance-based models.</strong> Each phase is resampled to 15 points so that trials of different length can be compared.</li>
+      <li><strong>No leakage.</strong> Median imputation, standardisation and the choice of the single best feature are fitted inside each training fold only. The distance matrices for dynamic time warping use no labels and no learned scaling, so computing them once on all trials leaks nothing.</li>
+    </ul>
+    <h3>The proposed representation: fixture-invariant hold (FIH)</h3>
+    <p>I model a fixture change as acting on every force sample of a trial as <span class="math">f(t) &#8614; R<sub>&#952;</sub> f(t) + b</span>, where R<sub>&#952;</sub> rotates about the vertical axis (approach direction) and b is a constant offset (pose-dependent bias of the torque-based estimate, different preload). Both are unknown. With t<sub>0</sub> the first hold burst:</p>
+    <p class="eq">d(t) = f(t) &minus; f(t<sub>0</sub>),&emsp; a(t) = d<sub>z</sub>(t),&emsp; &#8467;(t) = &#8730;(d<sub>x</sub>(t)<sup>2</sup> + d<sub>y</sub>(t)<sup>2</sup>)</p>
+    <div class="callout">
+      <p><strong>Proposition.</strong> a(t) and &#8467;(t) do not change for any &#952; and b.</p>
+      <p><strong>Proof.</strong> The offset b cancels in the difference, so d becomes R<sub>&#952;</sub>d. The third row of R<sub>&#952;</sub> is (0, 0, 1), so a is unchanged. Its upper 2&times;2 block is a rotation Q, and |Qv| = |v|, so &#8467; is unchanged. Burst averages and linear resampling are weighted sums with weights adding to 1, which commute with the map, so invariance survives the whole pipeline. &#8718;</p>
+    </div>
+    <p>The wedge phase is left out on purpose: it is shaped by the compliant controller, and its relation to seating reverses between sessions (section 8).</p>
+  </div>
+</section>
+
+<section id="models">
+  <h2><span class="n">4</span>Baselines and models compared</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Model</th><th style="text-align:left">Input</th><th style="text-align:left">Why it is here</th></tr></thead>
+    <tbody>
+      <tr><td>Prior</td><td style="text-align:left">none</td><td style="text-align:left">predicts the training class rate; the floor</td></tr>
+      <tr><td>SingleFeature</td><td style="text-align:left">78 features</td><td style="text-align:left">best single feature chosen inside the fold, 1-D logistic: what a hand-tuned threshold would do</td></tr>
+      <tr><td>LogReg</td><td style="text-align:left">78 features</td><td style="text-align:left">L2 logistic regression, C tuned: simple linear model</td></tr>
+      <tr><td>RandomForest</td><td style="text-align:left">78 features</td><td style="text-align:left">150 trees, depth and leaf size tuned: non-linear, robust to scaling</td></tr>
+      <tr><td>SVM-RBF</td><td style="text-align:left">78 features</td><td style="text-align:left">kernel SVM, C and &#947; tuned, monotone Platt map</td></tr>
+      <tr><td>kNN-DTW</td><td style="text-align:left">raw wedge and hold traces</td><td style="text-align:left">nearest neighbours under dynamic time warping: the standard time-series baseline</td></tr>
+      <tr class="fih"><td>FIH-kNN</td><td style="text-align:left">invariant signature (a, &#8467;)</td><td style="text-align:left">the same kNN-DTW learner, invariant input</td></tr>
+      <tr class="fih"><td>FIH-LR</td><td style="text-align:left">14 invariant statistics</td><td style="text-align:left">the same logistic regression, invariant input</td></tr>
+      <tr class="fih"><td>FIHV</td><td style="text-align:left">both</td><td style="text-align:left">average of the two FIH probabilities, weight fixed at 0.5</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">Keeping the learner fixed (kNN-DTW against FIH-kNN, LogReg against FIH-LR) makes the comparison controlled: only the representation changes. For the SVM, libsvm's built-in Platt scaling inverted the ranking on this data (AUC 0.29 against 0.66 for the raw decision values), so probabilities come from a monotone map fitted on out-of-fold decision values (script 11).</p>
+</section>
+
+<section id="evaluation">
+  <h2><span class="n">5</span>How the models were evaluated</h2>
+  <div class="prose">
+    <p>Both protocols were fixed before any model comparison.</p>
+    <ul class="tight">
+      <li><strong>Random cross-validation (nested).</strong> Stratified 5-fold on label &times; session, repeated 10 times with the same folds for every model. Inside each training fold, a 5-fold grid search picks hyperparameters by ROC-AUC, and the inner out-of-fold scores set two decision thresholds: &#964;<sub>BA</sub> (best balanced accuracy) and &#964;<sub>safe</sub> (the most sensitive threshold with a false-seated rate of at most 10%). The outer fold is used only for scoring.</li>
+      <li><strong>Cross-session (the deployment test).</strong> Train on one session, including the grid search and both thresholds, then test on the other session, in both directions.</li>
+      <li><strong>Metrics.</strong> ROC-AUC is primary because it is threshold-free and does not depend on the very different seated rates (45% and 26%). I also report balanced accuracy at &#964;<sub>BA</sub>, and sensitivity at &#964;<sub>safe</sub> with its false-seated rate, the number that matters for not cracking lenses.</li>
+      <li><strong>Uncertainty.</strong> Trial-level bootstrap with 2000 resamples, paired for model differences so trial difficulty cancels, and a permutation test that shuffles labels within each session 1000 times and reruns the whole nested pipeline.</li>
+    </ul>
+    <div class="callout warn">
+      <p><strong>Honesty about the design process.</strong> I designed FIH after seeing the cross-session failure on these two sessions. During development three kNN trace variants were scored across sessions: <span id="devvar"></span>. FIH was kept because the nuisance model predicts it, but its cross-session numbers are post hoc in that sense. Only a new session can give a clean test.</p>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <h2><span class="n">6</span>Results</h2>
+  <div class="table-wrap"><table id="tbl-main"></table></div>
+  <p class="cap">Random CV: mean of 10 repeats with 95% bootstrap interval, and the same scores ranked within each session. Cross-session: AUC per direction and mean, then decisions on the new session with thresholds learned on the old one. Sens. is sensitivity at &#964;<sub>safe</sub>, FSR its false-seated rate. Prior scores <span id="prior-auc"></span> under random CV.</p>
+
+  <div class="widget">
+    <p class="title">Same models, two protocols</p>
+    <p class="hint">Dark bars: random CV with both sessions pooled. Light bars: trained on one session, tested on the other (mean of both directions). The dotted line is chance.</p>
+    <div id="bars-chart"></div>
+    <div class="legend"><span><i style="background:var(--raw)"></i>random CV</span><span><i style="background:var(--unseated)"></i>cross-session</span></div>
+  </div>
+
+  <h3>What the comparison shows</h3>
+  <div class="prose">
+    <p><strong>Within a session the signal is real.</strong> Against SingleFeature, the paired bootstrap gives kNN-DTW <span id="pc-knn"></span> and RandomForest <span id="pc-rf"></span>. Ranking scores only within each session barely changes them (the "within" column), so no model wins by recognising the session. In the within-session permutation test, <span id="perm"></span>.</p>
+    <p><strong>Across sessions the standard models break.</strong> kNN-DTW, the best random-CV model, falls to 0.479, and at &#964;<sub>safe</sub> every standard learner calls no lens seated on the new session: thresholds learned on one session do not carry over.</p>
+    <p><strong>The invariant input helps with the learner held fixed.</strong> Paired cross-session differences (mean of both directions, 95% interval):</p>
+  </div>
+  <div class="table-wrap"><table id="tbl-paired"></table></div>
+  <p class="cap">Intervals that exclude zero are marked. FIH-LR is not resolved against RandomForest or SingleFeature, the strongest cross-session baselines; each direction tests on only 33 or 42 trials. The pre-declared fusion FIHV did not beat its parts and is reported as declared.</p>
+
+  <div class="widget" id="explorer">
+    <p class="title">Explore the decision: pick a model, a protocol and a threshold</p>
+    <p class="hint">Each dot is one test trial, placed by its predicted probability of being seated; the axis zooms to the range of that model's scores. Lenses to the right of the line would be snap-fitted. The two buttons apply the thresholds each model learned on its training data. Try kNN-DTW across sessions, then FIH-LR.</p>
+    <div class="controls">
+      <label>Model <select id="ex-model"></select></label>
+      <div class="seg" role="group" aria-label="Protocol" id="ex-proto"></div>
+    </div>
+    <div class="slider-row">
+      <label for="ex-tau">Threshold</label>
+      <input type="range" id="ex-tau" min="0" max="1" step="0.001" value="0.5">
+      <output id="ex-tau-out" for="ex-tau">0.50</output>
+    </div>
+    <div class="controls" style="margin-top:-4px">
+      <button type="button" class="btn" id="ex-ba">Use learned &#964;<sub>BA</sub></button>
+      <button type="button" class="btn" id="ex-safe">Use learned &#964;<sub>safe</sub></button>
+    </div>
+    <div class="split">
+      <div><div id="ex-strip"></div>
+        <div class="legend"><span><i class="dot" style="background:var(--seated)"></i>seated</span><span><i class="dot" style="background:var(--partial)"></i>partial contact</span><span><i class="dot" style="background:var(--unseated)"></i>failure</span></div>
+      </div>
+      <div><div id="ex-roc"></div></div>
+    </div>
+    <div class="readout" id="ex-readout"></div>
+    <p class="verdict" id="ex-verdict"></p>
+  </div>
+</section>
+
+<section id="errors">
+  <h2><span class="n">7</span>Error analysis</h2>
+  <div class="prose">
+    <p>The two kinds of unseated trial behave very differently. The table gives, under random CV at &#964;<sub>BA</sub>, the fraction of each recorded outcome that a model calls seated: the first column is sensitivity, the other two are false-seated rates for each failure type.</p>
+  </div>
+  <div class="table-wrap"><table id="tbl-err"></table></div>
+  <div class="prose">
+    <p><strong>Partial contact is the main safety risk.</strong> A partly seated lens also stops compressing during the hold, so its invariant response looks like a seated one. Raw kNN-DTW separates it better, but with level information that does not transfer between sessions. The explorer above shows this directly: orange dots cluster with the blue ones.</p>
+    <p><strong>Calibration.</strong> FIH-LR ranks usefully, but its Brier score (<span id="brier-fihlr"></span>) is no better than always predicting the base rate (0.226), because class weighting shifts its probabilities up; FIH-kNN is over-confident (calibration slope <span id="slope-fihknn"></span>). Decisions use thresholds chosen on inner scores, so they remain valid, but the probabilities themselves would need recalibration before use.</p>
+  </div>
+</section>
+
+<section id="depth">
+  <h2><span class="n">8</span>Deeper analysis</h2>
+  <h3>The derivation, checked numerically</h3>
+  <div class="prose">
+    <p>Every raw trial gets a random rotation &#952; ~ U(0&deg;, 360&deg;) and offset b ~ N(0, 2&sup2;) N per axis, and the whole per-trial pipeline is rerun. The FIH statistics change by at most 2.7&times;10<sup>&minus;15</sup>, which is floating-point rounding, while most standard features change. The script stops with an error if the change ever exceeds 10<sup>&minus;8</sup>, so a later code edit cannot silently break invariance.</p>
+  </div>
+  <h3>Which features can transfer at all?</h3>
+  <div class="prose"><p>A feature can only transfer if its within-session AUC lies on the same side of 0.5 in both sessions.</p></div>
+  <div class="table-wrap"><table id="tbl-dir"></table></div>
+  <p class="cap">Wedge features mostly reverse between sessions; their mean oriented transfer AUC is below chance. SingleFeature's usual choice, the detrended spread of f<sub>y</sub> in the hold, is offset-free, and a 30&deg; turn leaves most of it in y, which is why it is a strong cross-session baseline.</p>
+
+  <div class="widget" id="tradeoff">
+    <p class="title">How much does invariance cost?</p>
+    <p class="hint">kNN on a blend of the invariant and the raw distance. &#955; = 0 is FIH-kNN, &#955; = 1 is the original kNN-DTW. Slide to move between them.</p>
+    <div class="slider-row">
+      <label for="to-lam">&#955;</label>
+      <input type="range" id="to-lam" min="0" max="10" step="1" value="0">
+      <output id="to-out" for="to-lam">0.0</output>
+    </div>
+    <div id="to-chart"></div>
+    <p class="verdict" id="to-text"></p>
+  </div>
+  <div class="prose"><p>Selecting the model by random-CV AUC picks &#955; = 1, the one that fails at deployment. &#955; is not tuned on this curve, because the curve is computed on the test sessions.</p></div>
+
+  <div class="widget" id="stress">
+    <p class="title">What if the fixture moves again?</p>
+    <p class="hint">Models trained on one session; the other session is rotated or offset further in simulation, every feature and distance is rebuilt, and the models are not retrained. Cross-session AUC, mean of both directions.</p>
+    <div class="slider-row">
+      <label for="st-k">Change</label>
+      <input type="range" id="st-k" min="0" max="10" step="1" value="0">
+      <output id="st-out" for="st-k" style="min-width:96px">none</output>
+    </div>
+    <div id="st-chart"></div>
+    <p class="verdict" id="st-text"></p>
+  </div>
+  <div class="prose">
+    <p>RandomForest recovers at 180&deg; because a half turn flips the sign of f<sub>y</sub> and undoes the real flip between sessions, which independently confirms that the sideways direction is the nuisance. The FIH models do not move, as the proposition guarantees. This measures how fragile the other models are; it does not show that real fixture changes are only rotations and offsets.</p>
+    <h3>Representation or learner?</h3>
+    <p>Given the 14 FIH statistics, the standard learners transfer at <span id="fih-learners"></span>. RandomForest gains least: with 33 to 42 training trials, the trees split on noise. Simple learners benefit most from the invariant input.</p>
+  </div>
+</section>
+
+<section id="limits">
+  <h2><span class="n">9</span>Limitations</h2>
+  <div class="prose">
+    <ul class="tight">
+      <li><strong>Two sessions, and the method was designed after seeing them.</strong> A stronger claim needs new sessions with new fixture placements, held out and evaluated once.</li>
+      <li><strong>FIH-LR's within-session signal is weak.</strong> It does not clear the permutation null on its own (p = 0.09), so its cross-session lead rests on two test sessions and needs a new session to confirm.</li>
+      <li><strong>Small test sets.</strong> Each direction tests on 33 or 42 trials; single-direction intervals are about &plusmn;0.15.</li>
+      <li><strong>The nuisance model is narrow.</strong> It covers constant offsets and rotation about the vertical axis, not gain changes, tilts or offsets that drift during the hold.</li>
+      <li><strong>Partial contact is often taken for success.</strong> A deployed verifier would need a depth-sensitive invariant cue, such as axial stiffness during a small probing motion.</li>
+      <li><strong>Labels and setting.</strong> One operator labelled all trials, and all evaluation is offline.</li>
+    </ul>
+    <div class="callout">
+      <p><strong>Answer to the question.</strong> The force signal does discriminate seated from unseated lenses within a session, but that accuracy largely does not survive a moved fixture. Describing the hold by quantities a moved fixture cannot change restores useful cross-session ranking with the same learners, at a measured cost in within-session accuracy. With two sessions this is evidence, not proof, of transfer.</p>
+    </div>
+  </div>
+</section>
+
+<section id="reproduce">
+  <h2><span class="n">10</span>Reproduce and check</h2>
+  <div class="prose">
+    <p>The repository has the code, the exact preprocessing, the fold and split definitions (fixed seed 42), every result table and log, and the extra experiments: <a class="repo-link" href="#">repository on GitHub</a>.</p>
+<pre><code>python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt
+# put success.zip, failure.zip, partial_contact.zip in data/raw/
+bash run_all.sh        # scripts 01 to 13; results/ and docs/ are rebuilt</code></pre>
+    <ul class="tight">
+      <li><strong>Data access.</strong> The recordings belong to the internship project and are not public. Course staff can obtain the three zips from me. Everything on this page is an aggregate or a model output; no raw recording is published.</li>
+      <li><strong>Exact splits.</strong> <code>results/splits_random_cv.csv</code> gives the test fold of every trial in every repeat (the same folds for every model), and <code>results/splits_cross_session.csv</code> gives each trial's role in both cross-session directions.</li>
+      <li><strong>Where numbers come from.</strong> Every figure and table on this page is built from <code>results/</code> by <code>scripts/13_build_website.py</code>.</li>
+      <li><strong>AI use.</strong> I used Claude (Anthropic) to write and debug code, build figures and this page, and draft and edit text. I checked the reported numbers against the script outputs and am responsible for all content. Details in <code>AI_USE.md</code>.</li>
+      <li><strong>Citations.</strong> Sakoe and Chiba (1978), dynamic time warping; Varma and Simon (2006), nested cross-validation; Ojala and Garriga (2010), permutation tests for classifiers; Arjovsky et al. (2019), invariant risk minimisation; Pedregosa et al. (2011), scikit-learn.</li>
+    </ul>
+  </div>
+  <footer>ES 678 course project. The pipeline illustration in section 1 comes from the internship project that collected the data.</footer>
+</section>
+</main>
+</div>
+
+<script>
+// If this page is not served from GitHub Pages, put the repository URL here.
+const REPO_OVERRIDE = "";
+const D = /*__DATA__*/null;
+
+const NAME = {"SingleFeature":"SingleFeature","LogReg":"LogReg","RandomForest":"RandomForest","SVM-RBF":"SVM-RBF","kNN-DTW":"kNN-DTW","FIH-kNN":"FIH-kNN","FIH-LR":"FIH-LR","FIHV":"FIHV"};
+const SHORT = {"SingleFeature":"Single","LogReg":"LR","RandomForest":"RF","SVM-RBF":"SVM","kNN-DTW":"kNN-DTW","FIH-kNN":"FIH-kNN","FIH-LR":"FIH-LR","FIHV":"FIHV"};
+const isFIH = m => m.startsWith("FIH");
+const DAY = s => s === "20260807" ? "7 Aug" : s === "20260810" ? "10 Aug" : s;
+const f3 = v => v == null ? "n/a" : v.toFixed(3);
+const f2 = v => v == null ? "n/a" : v.toFixed(2);
+const pct = v => Math.round(v * 100) + "%";
+const NS = "http://www.w3.org/2000/svg";
+function S(tag, attrs = {}, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs = {}) { const t = S("text", Object.assign({x, y}, attrs), parent); t.textContent = s; return t; }
+const $ = id => document.getElementById(id);
+
+// ---------- repository link
+(function () {
+  let url = REPO_OVERRIDE;
+  if (!url && location.hostname.endsWith("github.io")) {
+    const user = location.hostname.split(".")[0];
+    const repo = location.pathname.split("/").filter(Boolean)[0];
+    if (repo) url = `https://github.com/${user}/${repo}`;
+  }
+  document.querySelectorAll("a.repo-link").forEach(a => { if (url) a.href = url; });
+})();
+
+// ---------- generic line chart
+function lineChart(host, opts) {
+  host.innerHTML = "";
+  const W = opts.w || 640, H = opts.h || 260, m = {l: 46, r: 14, t: 12, b: 34};
+  const svg = S("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": opts.label || "chart"}, host);
+  const [x0, x1] = opts.xd, [y0, y1] = opts.yd;
+  const X = v => m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r);
+  const Y = v => H - m.b - (v - y0) / (y1 - y0) * (H - m.t - m.b);
+  for (const t of opts.yt) { S("line", {x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), class: "grid"}, svg); txt(svg, m.l - 6, Y(t) + 4, opts.yf ? opts.yf(t) : t, {"text-anchor": "end"}); }
+  for (const t of opts.xt) txt(svg, X(t), H - m.b + 16, opts.xf ? opts.xf(t) : t, {"text-anchor": "middle"});
+  if (opts.xlab) txt(svg, (m.l + W - m.r) / 2, H - 4, opts.xlab, {"text-anchor": "middle"});
+  if (opts.ylab) txt(svg, 12, (m.t + H - m.b) / 2, opts.ylab, {"text-anchor": "middle", transform: `rotate(-90 12 ${(m.t + H - m.b) / 2})`});
+  return {svg, X, Y, m, W, H};
+}
+
+// ---------- hero traces
+(function () {
+  const host = $("hero-chart");
+  const style = {"1": {c: "var(--seated)"}, "0": {c: "var(--unseated)"}};
+  function draw(view) {
+    const vals = D.traces.flatMap(t => t[view]);
+    const lo = Math.floor(Math.min(...vals)), hi = Math.ceil(Math.max(...vals) + 0.01);
+    const yt = []; for (let v = lo; v <= hi; v++) yt.push(v);
+    const c = lineChart(host, {xd: [0, 1], yd: [lo, hi], xt: [0, 0.25, 0.5, 0.75, 1], yt, w: 820, h: 270,
+      xlab: "normalised hold time", ylab: view === "raw" ? "f_z [N]" : "a(t) [N]", label: "Mean hold force traces"});
+    D.traces.forEach(t => {
+      const pts = t[view].map((v, i) => `${c.X(i / (t[view].length - 1))},${c.Y(v)}`).join(" ");
+      S("polyline", {points: pts, fill: "none", stroke: style[t.seated].c, "stroke-width": 2.4,
+        "stroke-dasharray": t.session === D.sessions[1] ? "6 4" : "none"}, c.svg);
+    });
+    $("hero-text").textContent = view === "raw"
+      ? "Raw force: the 10 Aug curves sit about 4 N higher than 7 Aug, for seated and unseated lenses alike. A model trained on one day sees unfamiliar levels on the other."
+      : "Invariant change from the start of the hold: both days now tell the same story. Unseated lenses keep compressing (curves fall), seated lenses settle and recover.";
+  }
+  $("hero-legend").innerHTML = D.traces.map(t =>
+    `<span><i class="${t.session === D.sessions[1] ? "dash" : ""}" style="background:${t.seated ? "var(--seated)" : "var(--unseated)"};color:${t.seated ? "var(--seated)" : "var(--unseated)"}"></i>${DAY(t.session)}, ${t.seated ? "seated" : "not seated"} (${t.n})</span>`).join("");
+  document.querySelectorAll("#hero-widget .seg button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("#hero-widget .seg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    draw(b.dataset.view);
+  }));
+  draw("raw");
+})();
+
+// ---------- text fills
+$("geo-shift").textContent = D.geo.rim_shift_cm;
+$("geo-yaw").textContent = `${D.geo.yaw[D.sessions[0]] > 0 ? "+" : ""}${D.geo.yaw[D.sessions[0]]}° to ${D.geo.yaw[D.sessions[1]]}°`;
+$("devvar").textContent = D.devvar.map(v => `${v.variant} ${f3(v.auc)}`).join(", ");
+$("prior-auc").textContent = `${f3(D.prior_cv_auc)} (a pooling artefact of constant predictions; its true value is 0.5)`;
+const pc = Object.fromEntries(D.paired_cv.map(r => [r.a, r]));
+const fmtDiff = r => `${r.d >= 0 ? "+" : ""}${f3(r.d)} [${f3(r.lo)}, ${f3(r.hi)}]`;
+$("pc-knn").textContent = fmtDiff(pc["kNN-DTW"]);
+$("pc-rf").textContent = fmtDiff(pc["RandomForest"]);
+const permOrder = ["LogReg", "kNN-DTW", "FIH-kNN", "FIH-LR"].filter(m => D.perm[m]);
+$("perm").textContent = permOrder.map(m => `${m} scores ${f3(D.perm[m].obs)} against a null mean of ${f3(D.perm[m].null)} (p = ${D.perm[m].p.toFixed(3)}${D.perm[m].p > 0.05 ? ", not significant on its own" : ""})`).join("; ")
+  + (D.perm["FIH-LR"] ? "" : "; the FIH-LR value is written by step 5 of the code");
+$("brier-fihlr").textContent = f3(D.summary["FIH-LR"].brier);
+$("slope-fihknn").textContent = f2(D.summary["FIH-kNN"].calib_slope);
+$("fih-learners").textContent = ["SingleFeature", "LogReg", "SVM-RBF", "RandomForest"].filter(m => D.fih_learners[m] != null)
+  .map(m => `${f3(D.fih_learners[m])} (${m})`).join(", ");
+
+// ---------- data table
+(function () {
+  const S0 = D.sessions[0], S1 = D.sessions[1], c = D.counts, oc = D.outcome_counts;
+  $("tbl-data").innerHTML = `<thead><tr><th></th><th>trials</th><th>seated</th><th>seated rate</th></tr></thead><tbody>
+    <tr><td>Session 7 Aug</td><td>${c[S0].n}</td><td>${c[S0].seated}</td><td>${pct(c[S0].seated / c[S0].n)}</td></tr>
+    <tr><td>Session 10 Aug</td><td>${c[S1].n}</td><td>${c[S1].seated}</td><td>${pct(c[S1].seated / c[S1].n)}</td></tr>
+    <tr><td><strong>All</strong> (${oc.success} success, ${oc.failure} failure, ${oc.partial_contact} partial contact)</td><td><strong>${c[S0].n + c[S1].n}</strong></td><td><strong>${c[S0].seated + c[S1].seated}</strong></td><td><strong>${pct(D.prevalence)}</strong></td></tr></tbody>`;
+})();
+
+// ---------- main table
+(function () {
+  const ms = D.models, s = D.summary;
+  const best = k => Math.max(...ms.map(m => s[m][k]));
+  const b = {cv_auc: best("cv_auc"), within: best("within"), x_mean: best("x_mean"), x_ba: best("x_ba")};
+  const cell = (m, k, v) => `<td class="${s[m][k] === b[k] ? "best" : ""}">${v}</td>`;
+  let h = `<thead><tr><th>Model</th><th>Random CV AUC [95% CI]</th><th>within</th><th>7&rarr;10</th><th>10&rarr;7</th><th>cross mean</th><th>BA at &tau;<sub>BA</sub></th><th>Sens. (FSR)</th></tr></thead><tbody>`;
+  for (const m of ms) {
+    const r = s[m];
+    h += `<tr class="${isFIH(m) ? "fih" : ""}"><td>${NAME[m]}</td>${cell(m, "cv_auc", `${f3(r.cv_auc)} [${f2(r.cv_lo)}, ${f2(r.cv_hi)}]`)}${cell(m, "within", f3(r.within))}<td>${f3(r.x_a)}</td><td>${f3(r.x_b)}</td>${cell(m, "x_mean", f3(r.x_mean))}${cell(m, "x_ba", f3(r.x_ba))}<td>${f2(r.x_sens)} (${f2(r.x_fsr)})</td></tr>`;
+  }
+  $("tbl-main").innerHTML = h + "</tbody>";
+})();
+
+// ---------- grouped bars
+(function () {
+  const host = $("bars-chart"), ms = D.models, W = 680, H = 260, m = {l: 40, r: 8, t: 10, b: 40};
+  const svg = S("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Random CV and cross-session AUC per model"}, host);
+  const Y = v => H - m.b - (v - 0.3) / 0.7 * (H - m.t - m.b);
+  for (const t of [0.3, 0.5, 0.7, 0.9]) { S("line", {x1: m.l, x2: W - m.r, y1: Y(t), y2: Y(t), class: "grid"}, svg); txt(svg, m.l - 6, Y(t) + 4, t.toFixed(1), {"text-anchor": "end"}); }
+  S("line", {x1: m.l, x2: W - m.r, y1: Y(0.5), y2: Y(0.5), stroke: "var(--muted)", "stroke-dasharray": "2 3"}, svg);
+  const bw = (W - m.l - m.r) / ms.length;
+  ms.forEach((k, i) => {
+    const x = m.l + i * bw, r = D.summary[k];
+    if (isFIH(k)) S("rect", {x: x + 2, y: m.t, width: bw - 4, height: H - m.t - m.b, fill: "var(--fih-tint)"}, svg);
+    for (const [j, v, col] of [[0, r.cv_auc, "var(--raw)"], [1, r.x_mean, "var(--unseated)"]]) {
+      const rect = S("rect", {x: x + bw * 0.16 + j * bw * 0.34, y: Y(v), width: bw * 0.32, height: Y(0.3) - Y(v), fill: col, opacity: j ? 0.75 : 1}, svg);
+      const t = S("title", {}, rect); t.textContent = `${k}: ${j ? "cross-session" : "random CV"} AUC ${f3(v)}`;
+    }
+    txt(svg, x + bw / 2, H - m.b + 16, SHORT[k], {"text-anchor": "middle", style: isFIH(k) ? "fill:var(--fih);font-weight:600" : ""});
+  });
+})();
+
+// ---------- paired table
+(function () {
+  let h = `<thead><tr><th>Comparison (cross-session)</th><th>AUC difference</th><th>95% interval</th><th></th></tr></thead><tbody>`;
+  for (const r of D.paired_x) {
+    const sig = r.lo > 0 || r.hi < 0;
+    h += `<tr class="${sig ? "fih" : ""}"><td>${r.a} minus ${r.b}</td><td>${r.d >= 0 ? "+" : ""}${f3(r.d)}</td><td>[${f3(r.lo)}, ${f3(r.hi)}]</td><td style="text-align:left">${sig ? "excludes 0" : "not resolved"}</td></tr>`;
+  }
+  $("tbl-paired").innerHTML = h + "</tbody>";
+})();
+
+// ---------- ROC helper
+function roc(y, p) {
+  const idx = p.map((v, i) => i).sort((a, b) => p[b] - p[a]);
+  const P = y.filter(v => v === 1).length, N = y.length - P;
+  let tp = 0, fp = 0, pts = [[0, 0]], auc = 0, prevF = 0, prevT = 0;
+  for (let k = 0; k < idx.length; k++) {
+    const i = idx[k]; if (y[i] === 1) tp++; else fp++;
+    if (k === idx.length - 1 || p[idx[k + 1]] !== p[i]) {
+      const F = fp / N, T = tp / P; auc += (F - prevF) * (T + prevT) / 2; prevF = F; prevT = T; pts.push([F, T]);
+    }
+  }
+  return {pts, auc};
+}
+
+// ---------- decision explorer
+(function () {
+  const sel = $("ex-model"), proto = $("ex-proto"), tau = $("ex-tau");
+  D.models.forEach(m => { const o = document.createElement("option"); o.value = m; o.textContent = NAME[m]; sel.appendChild(o); });
+  sel.value = "kNN-DTW";
+  const protos = [["cv", "Random CV, both sessions"], [D.sessions[0], "Train 7 Aug, test 10 Aug"], [D.sessions[1], "Train 10 Aug, test 7 Aug"]];
+  let cur = D.sessions[0];
+  protos.forEach(([k, l]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = l; b.dataset.k = k; b.setAttribute("aria-pressed", String(k === cur)); proto.appendChild(b); });
+  proto.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; cur = b.dataset.k; proto.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); setTau(learned().ba); });
+
+  function data() {
+    const m = sel.value;
+    if (cur === "cv") return {y: D.trials.y, o: D.trials.outcome, p: D.cv_scores[m]};
+    const x = D.xs_scores[cur]; return {y: x.y, o: x.outcome, p: x.models[m].p};
+  }
+  function learned() {
+    const m = sel.value;
+    if (cur === "cv") return {ba: D.summary[m].tau_ba, safe: D.summary[m].tau_safe};
+    const x = D.xs_scores[cur].models[m]; return {ba: x.tau_ba, safe: x.tau_safe};
+  }
+  let dom = [0, 1];
+  function domain() {
+    const {p} = data(), L = learned();
+    let lo = Math.min(...p, L.ba, L.safe), hi = Math.max(...p, L.ba, L.safe);
+    const pad = Math.max(0.01, (hi - lo) * 0.06);
+    lo = Math.max(0, lo - pad); hi = Math.min(1, hi + pad);
+    dom = [lo, hi];
+    tau.min = lo; tau.max = hi; tau.step = (hi - lo) < 0.3 ? 0.001 : 0.01;
+  }
+  function setTau(v) { domain(); tau.value = Math.min(dom[1], Math.max(dom[0], v)); draw(); }
+  $("ex-ba").addEventListener("click", () => setTau(learned().ba));
+  $("ex-safe").addEventListener("click", () => setTau(learned().safe));
+  sel.addEventListener("change", () => setTau(learned().ba));
+  tau.addEventListener("input", draw);
+
+  function draw() {
+    const t = +tau.value; $("ex-tau-out").textContent = t.toFixed(dom[1] - dom[0] < 0.3 ? 3 : 2);
+    const {y, o, p} = data();
+    // strip plot
+    const host = $("ex-strip"); host.innerHTML = "";
+    const W = 440, H = 200, m = {l: 98, r: 12, t: 10, b: 30};
+    const svg = S("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Predicted probability of each test trial"}, host);
+    const X = v => m.l + (v - dom[0]) / (dom[1] - dom[0]) * (W - m.l - m.r);
+    const rows = [["success", "seated", "var(--seated)"], ["partial_contact", "partial contact", "var(--partial)"], ["failure", "failure", "var(--unseated)"]];
+    const rh = (H - m.t - m.b) / 3;
+    S("rect", {x: X(t), y: m.t, width: X(dom[1]) - X(t), height: H - m.t - m.b, fill: "var(--fih-tint)"}, svg);
+    rows.forEach(([key, lab, col], ri) => {
+      const cy = m.t + rh * ri + rh / 2;
+      S("line", {x1: m.l, x2: W - m.r, y1: m.t + rh * (ri + 1), y2: m.t + rh * (ri + 1), class: "grid"}, svg);
+      txt(svg, m.l - 8, cy + 4, lab, {"text-anchor": "end"});
+      let k = 0;
+      p.forEach((v, i) => { if (o[i] !== key) return; const jit = ((k * 37) % 11 - 5) * (rh / 16); k++;
+        S("circle", {cx: X(v), cy: cy + jit, r: 4, fill: col, "fill-opacity": 0.8, stroke: "var(--surface)", "stroke-width": 0.8}, svg); });
+    });
+    S("line", {x1: X(t), x2: X(t), y1: m.t - 4, y2: H - m.b, stroke: "var(--ink)", "stroke-width": 1.6}, svg);
+    const span = dom[1] - dom[0], stepT = span > 0.6 ? 0.25 : span > 0.3 ? 0.1 : span > 0.12 ? 0.05 : span > 0.05 ? 0.02 : 0.01;
+    for (let v = Math.ceil(dom[0] / stepT) * stepT; v <= dom[1] + 1e-9; v += stepT)
+      txt(svg, X(v), H - m.b + 15, +v.toFixed(3), {"text-anchor": "middle"});
+    txt(svg, (m.l + W - m.r) / 2, H - 2, "predicted probability of seated", {"text-anchor": "middle"});
+    txt(svg, W - m.r - 4, m.t + 10, "snap-fit", {"text-anchor": "end", style: "fill:var(--fih);font-weight:600"});
+
+    // ROC
+    const R = roc(y, p);
+    const c = lineChart($("ex-roc"), {w: 300, h: 250, xd: [0, 1], yd: [0, 1], xt: [0, 0.5, 1], yt: [0, 0.5, 1],
+      xlab: "false-seated rate", ylab: "sensitivity", label: "ROC curve"});
+    S("line", {x1: c.X(0), y1: c.Y(0), x2: c.X(1), y2: c.Y(1), stroke: "var(--muted)", "stroke-dasharray": "2 3"}, c.svg);
+    S("polyline", {points: R.pts.map(([a, b]) => `${c.X(a)},${c.Y(b)}`).join(" "), fill: "none", stroke: isFIH(sel.value) ? "var(--fih)" : "var(--raw)", "stroke-width": 2.2}, c.svg);
+    let tp = 0, fp = 0, fn = 0, tn = 0, fpPart = 0, fpFail = 0;
+    y.forEach((v, i) => { const call = p[i] >= t; if (v === 1) { call ? tp++ : fn++; } else { if (call) { fp++; o[i] === "partial_contact" ? fpPart++ : fpFail++; } else tn++; } });
+    const sens = tp / (tp + fn), fsr = fp / (fp + tn), ba = (sens + 1 - fsr) / 2;
+    S("circle", {cx: c.X(fsr), cy: c.Y(sens), r: 5.5, fill: "var(--ink)", stroke: "var(--surface)", "stroke-width": 1.5}, c.svg);
+    txt(c.svg, c.X(1) - 4, c.Y(0) - 8, `AUC ${R.auc.toFixed(3)}`, {"text-anchor": "end", style: "fill:var(--ink);font-weight:600;font-size:13px"});
+
+    $("ex-readout").innerHTML =
+      `<div class="${sens >= 0.5 ? "good" : ""}"><b>${tp} of ${tp + fn}</b><span>seated lenses passed (sensitivity ${pct(sens)})</span></div>` +
+      `<div class="${fsr > 0.1 ? "bad" : ""}"><b>${fp} of ${fp + tn}</b><span>unseated lenses passed (false-seated rate ${pct(fsr)})</span></div>` +
+      `<div><b>${fpPart} / ${fpFail}</b><span>of those: partial contact / failure</span></div>` +
+      `<div><b>${ba.toFixed(2)}</b><span>balanced accuracy</span></div>`;
+    const L = learned();
+    let v = "";
+    if (tp + fp === 0) v = "At this threshold no lens is snap-fitted: safe, but the robot never completes an assembly.";
+    else if (fsr > 0.1) v = `${tp} of ${tp + fn} seated lenses are snap-fitted, but so are ${fp} unseated ones, which could crack. The safety target is a false-seated rate of at most 10%.`;
+    else if (tp === 0) v = `No seated lens is snap-fitted, yet ${fp} unseated ${fp === 1 ? "one slips" : "ones slip"} through.`;
+    else v = `${tp} of ${tp + fn} seated lenses are snap-fitted while only ${fp} unseated ${fp === 1 ? "one slips" : "ones slip"} through.`;
+    if (cur !== "cv" && Math.abs(t - L.safe) < 0.005 && sens < 0.2) v += " This safe threshold was learned on the other session and no longer fits the new session's scores.";
+    $("ex-verdict").textContent = v;
+  }
+  setTau(learned().ba);
+})();
+
+// ---------- error table (random CV, tau_BA)
+(function () {
+  const want = ["SingleFeature", "RandomForest", "kNN-DTW", "FIH-kNN", "FIH-LR", "FIHV"];
+  const get = (m, o) => (D.errors.find(r => r.model === m && r.rule === "tau_ba" && r.outcome === o) || {}).rate;
+  let h = `<thead><tr><th>Model</th><th>success called seated</th><th>partial contact called seated</th><th>failure called seated</th></tr></thead><tbody>`;
+  for (const m of want) h += `<tr class="${isFIH(m) ? "fih" : ""}"><td>${m}</td><td>${f2(get(m, "success"))}</td><td>${f2(get(m, "partial_contact"))}</td><td>${f2(get(m, "failure"))}</td></tr>`;
+  $("tbl-err").innerHTML = h + "</tbody>";
+})();
+
+// ---------- direction consistency
+(function () {
+  const lab = {W: "W: wedge force", H: "H: hold force", X: "X: wedge-to-hold change", V: "V: vibration", P: "P: position", FIH: "FIH: invariant hold"};
+  let h = `<thead><tr><th>Feature group</th><th>features</th><th>same direction on both days</th><th>mean oriented transfer AUC</th></tr></thead><tbody>`;
+  for (const r of D.dircons) h += `<tr class="${r.group === "FIH" ? "fih" : ""}"><td>${lab[r.group] || r.group}</td><td>${r.n}</td><td>${pct(r.same)}</td><td>${f2(r.mean)}</td></tr>`;
+  $("tbl-dir").innerHTML = h + "</tbody>";
+})();
+
+// ---------- trade-off
+(function () {
+  const T = D.tradeoff, s = $("to-lam");
+  function draw() {
+    const k = +s.value, r = T[k]; $("to-out").textContent = r.lam.toFixed(1);
+    const c = lineChart($("to-chart"), {xd: [0.62, 0.88], yd: [0.45, 0.72], xt: [0.65, 0.7, 0.75, 0.8, 0.85], yt: [0.45, 0.5, 0.55, 0.6, 0.65, 0.7],
+      xf: v => v.toFixed(2), yf: v => v.toFixed(2), xlab: "within-session AUC (random CV)", ylab: "cross-session AUC", w: 820, h: 290, label: "Invariance trade-off"});
+    S("polyline", {points: T.map(q => `${c.X(q.within)},${c.Y(q.cross)}`).join(" "), fill: "none", stroke: "var(--fih)", "stroke-width": 2}, c.svg);
+    T.forEach((q, i) => S("circle", {cx: c.X(q.within), cy: c.Y(q.cross), r: i === k ? 7 : 3, fill: i === k ? "var(--ink)" : "var(--fih)"}, c.svg));
+    txt(c.svg, c.X(T[0].within) + 8, c.Y(T[0].cross) - 6, "FIH-kNN");
+    txt(c.svg, c.X(T[T.length - 1].within) - 6, c.Y(T[T.length - 1].cross) + 4, "kNN-DTW", {"text-anchor": "end"});
+    $("to-text").textContent = `λ = ${r.lam.toFixed(1)}: within-session AUC ${f3(r.within)}, cross-session AUC ${f3(r.cross)}, cross-session balanced accuracy ${f3(r.ba)}.`;
+  }
+  s.addEventListener("input", draw); draw();
+})();
+
+// ---------- stress test
+(function () {
+  const st = D.stress, s = $("st-k"), ms = D.models;
+  s.max = st.changes.length - 1;
+  function draw() {
+    const k = +s.value; $("st-out").textContent = st.changes[k];
+    const host = $("st-chart"); host.innerHTML = "";
+    const W = 640, rowH = 26, m = {l: 110, r: 50, t: 6, b: 26}, H = m.t + m.b + rowH * ms.length;
+    const svg = S("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Stress test AUC per model"}, host);
+    const X = v => m.l + (v - 0.3) / 0.55 * (W - m.l - m.r);
+    for (const t of [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]) { S("line", {x1: X(t), x2: X(t), y1: m.t, y2: H - m.b, class: "grid"}, svg); txt(svg, X(t), H - m.b + 16, t.toFixed(1), {"text-anchor": "middle"}); }
+    ms.forEach((mm, i) => {
+      const v = st.auc[mm][k], v0 = st.auc[mm][0], y0 = m.t + i * rowH;
+      txt(svg, m.l - 8, y0 + rowH / 2 + 4, mm, {"text-anchor": "end", style: isFIH(mm) ? "fill:var(--fih);font-weight:600" : ""});
+      S("rect", {x: X(0.3), y: y0 + 5, width: Math.max(0, X(v) - X(0.3)), height: rowH - 10, rx: 2, fill: isFIH(mm) ? "var(--fih)" : "var(--raw)", opacity: 0.85}, svg);
+      S("line", {x1: X(v0), x2: X(v0), y1: y0 + 2, y2: y0 + rowH - 2, stroke: "var(--ink)", "stroke-width": 1.5}, svg);
+      txt(svg, X(v) + 6, y0 + rowH / 2 + 4, f3(v), {style: "fill:var(--ink)"});
+    });
+    S("line", {x1: X(0.5), x2: X(0.5), y1: m.t, y2: H - m.b, stroke: "var(--unseated)", "stroke-dasharray": "3 3"}, svg);
+    const drop = ms.filter(mm => !isFIH(mm)).map(mm => [mm, st.auc[mm][k] - st.auc[mm][0]]).sort((a, b) => a[1] - b[1])[0];
+    $("st-text").textContent = k === 0 ? "No extra change: these are the real cross-session results. The black tick marks each model's starting point."
+      : `Largest drop among the standard models: ${drop[0]} (${drop[1] >= 0 ? "+" : ""}${drop[1].toFixed(3)}). The FIH models stay exactly where they were.`;
+  }
+  s.addEventListener("input", draw); draw();
+})();
+
+// ---------- table of contents highlight
+(function () {
+  const links = [...document.querySelectorAll("nav.toc ol a")];
+  const map = new Map(links.map(a => [a.getAttribute("href").slice(1), a]));
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { links.forEach(a => a.classList.remove("active")); const a = map.get(e.target.id); if (a) a.classList.add("active"); } }), {rootMargin: "-30% 0px -60% 0px"});
+  document.querySelectorAll("main section").forEach(s => io.observe(s));
+})();
+</script>
+</body>
+</html>

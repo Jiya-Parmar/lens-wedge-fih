@@ -83,7 +83,7 @@ Windows:
 run_all.bat
 ```
 
-This runs the twelve scripts in order, prints their output, and saves each script's log to
+This runs the thirteen scripts in order, prints their output, and saves each script's log to
 `results/log_<script>.txt`. It stops at the first error and tells you which script failed.
 
 ## 6. Or run the scripts one at a time
@@ -104,7 +104,8 @@ because each step uses files written by the earlier ones.
 | 9 | `python scripts/09_invariance_diagnostics.py` | invariance proof check and fixture-change stress test | 1 to 2 min |
 | 10 | `python scripts/10_invariance_tradeoff.py` | invariance versus discrimination trade-off | 1 min |
 | 11 | `python scripts/11_svm_platt_check.py` | the SVM probability bug check | 10 s |
-| 12 | `python scripts/12_paper_figures.py` | the paper's figure | 5 s |
+| 12 | `python scripts/12_paper_figures.py` | the paper's figures | 5 s |
+| 13 | `python scripts/13_build_website.py` | rebuilds the website `docs/index.html` from `results/` | 5 s |
 
 Faster versions for a quick check (numbers will differ slightly from the paper):
 ```
