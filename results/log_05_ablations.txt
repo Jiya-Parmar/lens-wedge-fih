@@ -1,0 +1,120 @@
+A. feature-group ablation
+   LogReg       W (wedge force)      AUC 0.690  (5 s)
+   LogReg       H (hold force)       AUC 0.735  (3 s)
+   LogReg       V (vibration)        AUC 0.523  (3 s)
+   LogReg       P (position only)    AUC 0.674  (3 s)
+   LogReg       W+V (no hold)        AUC 0.644  (4 s)
+   LogReg       W+H                  AUC 0.721  (4 s)
+   LogReg       W+H+X                AUC 0.718  (4 s)
+   LogReg       MAIN W+H+X+V         AUC 0.723  (4 s)
+   LogReg       MAIN + P             AUC 0.704  (4 s)
+   LogReg       FIH (invariant)      AUC 0.661  (4 s)
+   RandomForest W (wedge force)      AUC 0.767  (44 s)
+   RandomForest H (hold force)       AUC 0.762  (44 s)
+   RandomForest V (vibration)        AUC 0.464  (49 s)
+   RandomForest P (position only)    AUC 0.681  (46 s)
+   RandomForest W+V (no hold)        AUC 0.739  (43 s)
+   RandomForest W+H                  AUC 0.792  (44 s)
+   RandomForest W+H+X                AUC 0.771  (44 s)
+   RandomForest MAIN W+H+X+V         AUC 0.792  (44 s)
+   RandomForest MAIN + P             AUC 0.763  (44 s)
+   RandomForest FIH (invariant)      AUC 0.660  (43 s)
+B. hold-duration study (features rebuilt from bursts.csv)
+   LogReg       hold=0     features= 23 AUC 0.684
+   RandomForest hold=0     features= 23 AUC 0.764
+   LogReg       hold=1     features= 78 AUC 0.650
+   RandomForest hold=1     features= 78 AUC 0.735
+   LogReg       hold=2     features= 78 AUC 0.749
+   RandomForest hold=2     features= 78 AUC 0.756
+   LogReg       hold=3     features= 78 AUC 0.705
+   RandomForest hold=3     features= 78 AUC 0.762
+   LogReg       hold=4     features= 78 AUC 0.730
+   RandomForest hold=4     features= 78 AUC 0.782
+   LogReg       hold=None  features= 78 AUC 0.723
+   RandomForest hold=None  features= 78 AUC 0.792
+C. label-definition study
+   LogReg       success_vs_rest  n=75 pos=26 AUC 0.723
+   RandomForest success_vs_rest  n=75 pos=26 AUC 0.792
+   kNN-DTW      success_vs_rest  n=75 pos=26 AUC 0.848
+   FIH-kNN      success_vs_rest  n=75 pos=26 AUC 0.656
+   FIH-LR       success_vs_rest  n=75 pos=26 AUC 0.661
+   LogReg       paper_merge      n=75 pos=52 AUC 0.633
+   RandomForest paper_merge      n=75 pos=52 AUC 0.704
+   kNN-DTW      paper_merge      n=75 pos=52 AUC 0.741
+   FIH-kNN      paper_merge      n=75 pos=52 AUC 0.678
+   FIH-LR       paper_merge      n=75 pos=52 AUC 0.636
+   LogReg       drop_partial     n=49 pos=26 AUC 0.729
+   RandomForest drop_partial     n=49 pos=26 AUC 0.826
+   kNN-DTW      drop_partial     n=49 pos=26 AUC 0.855
+   FIH-kNN      drop_partial     n=49 pos=26 AUC 0.759
+   FIH-LR       drop_partial     n=49 pos=26 AUC 0.700
+D. label-permutation test (1000 permutations, 1 repeat each)
+   LogReg     observed 0.740  null 0.546+/-0.079  p = 0.0070  (951 s)
+   kNN-DTW    observed 0.859  null 0.539+/-0.082  p = 0.0010  (224 s)
+   FIH-kNN    observed 0.693  null 0.503+/-0.090  p = 0.0150  (214 s)
+   FIH-LR     observed 0.630  null 0.513+/-0.089  p = 0.0909  (882 s)
+
+ablation_feature_groups:
+       model       feature_set  n  n_pos  roc_auc  roc_auc_sd  roc_auc_ci_lo  roc_auc_ci_hi  pr_auc  ba_at_tau_ba  sens_at_tau_safe  false_seated_at_tau_safe
+      LogReg   W (wedge force) 75     26    0.690       0.019          0.562          0.803   0.533         0.603             0.308                     0.098
+      LogReg    H (hold force) 75     26    0.735       0.026          0.629          0.836   0.581         0.647             0.346                     0.106
+      LogReg     V (vibration) 75     26    0.523       0.048          0.405          0.645   0.368         0.484             0.008                     0.020
+      LogReg P (position only) 75     26    0.674       0.037          0.535          0.799   0.531         0.672             0.292                     0.098
+      LogReg     W+V (no hold) 75     26    0.644       0.034          0.524          0.754   0.481         0.612             0.169                     0.086
+      LogReg               W+H 75     26    0.721       0.029          0.609          0.815   0.553         0.673             0.369                     0.147
+      LogReg             W+H+X 75     26    0.718       0.027          0.610          0.814   0.554         0.683             0.354                     0.143
+      LogReg      MAIN W+H+X+V 75     26    0.723       0.026          0.621          0.817   0.546         0.681             0.362                     0.155
+      LogReg          MAIN + P 75     26    0.704       0.034          0.601          0.796   0.526         0.652             0.315                     0.139
+      LogReg   FIH (invariant) 75     26    0.661       0.046          0.560          0.764   0.489         0.629             0.169                     0.098
+RandomForest   W (wedge force) 75     26    0.767       0.024          0.642          0.878   0.697         0.713             0.546                     0.118
+RandomForest    H (hold force) 75     26    0.762       0.037          0.655          0.861   0.663         0.674             0.392                     0.114
+RandomForest     V (vibration) 75     26    0.464       0.057          0.344          0.585   0.344         0.463             0.031                     0.090
+RandomForest P (position only) 75     26    0.681       0.028          0.557          0.799   0.594         0.624             0.277                     0.073
+RandomForest     W+V (no hold) 75     26    0.739       0.044          0.607          0.862   0.674         0.698             0.485                     0.110
+RandomForest               W+H 75     26    0.792       0.033          0.687          0.884   0.701         0.696             0.392                     0.098
+RandomForest             W+H+X 75     26    0.771       0.035          0.663          0.865   0.690         0.677             0.454                     0.102
+RandomForest      MAIN W+H+X+V 75     26    0.792       0.049          0.691          0.879   0.694         0.681             0.438                     0.090
+RandomForest          MAIN + P 75     26    0.763       0.047          0.647          0.858   0.680         0.657             0.446                     0.106
+RandomForest   FIH (invariant) 75     26    0.660       0.032          0.548          0.771   0.492         0.588             0.185                     0.073
+
+ablation_hold_duration:
+       model hold_s  n  n_pos  roc_auc  roc_auc_sd  roc_auc_ci_lo  roc_auc_ci_hi  pr_auc  ba_at_tau_ba  sens_at_tau_safe  false_seated_at_tau_safe
+      LogReg      0 75     26    0.684       0.030          0.563          0.793   0.504         0.606             0.169                     0.078
+RandomForest      0 75     26    0.764       0.023          0.632          0.882   0.696         0.722             0.523                     0.110
+      LogReg      1 75     26    0.650       0.037          0.536          0.757   0.446         0.613             0.085                     0.106
+RandomForest      1 75     26    0.735       0.028          0.618          0.836   0.586         0.657             0.331                     0.098
+      LogReg      2 75     26    0.749       0.025          0.651          0.836   0.568         0.678             0.354                     0.102
+RandomForest      2 75     26    0.756       0.035          0.641          0.855   0.623         0.693             0.331                     0.098
+      LogReg      3 75     26    0.705       0.042          0.602          0.795   0.522         0.670             0.254                     0.106
+RandomForest      3 75     26    0.762       0.032          0.656          0.854   0.631         0.681             0.292                     0.069
+      LogReg      4 75     26    0.730       0.030          0.625          0.822   0.562         0.663             0.369                     0.127
+RandomForest      4 75     26    0.782       0.032          0.673          0.875   0.688         0.674             0.431                     0.102
+      LogReg   full 75     26    0.723       0.026          0.621          0.817   0.546         0.681             0.362                     0.155
+RandomForest   full 75     26    0.792       0.049          0.691          0.879   0.694         0.681             0.438                     0.090
+
+ablation_label_scheme:
+       model    label_scheme  n  n_pos  roc_auc  roc_auc_sd  roc_auc_ci_lo  roc_auc_ci_hi  pr_auc  ba_at_tau_ba  sens_at_tau_safe  false_seated_at_tau_safe
+      LogReg success_vs_rest 75     26    0.723       0.026          0.621          0.817   0.546         0.681             0.362                     0.155
+RandomForest success_vs_rest 75     26    0.792       0.049          0.691          0.879   0.694         0.681             0.438                     0.090
+     kNN-DTW success_vs_rest 75     26    0.848       0.021          0.759          0.922   0.737         0.756             0.531                     0.086
+     FIH-kNN success_vs_rest 75     26    0.656       0.045          0.541          0.759   0.494         0.612             0.231                     0.114
+      FIH-LR success_vs_rest 75     26    0.661       0.046          0.560          0.764   0.489         0.629             0.169                     0.098
+      LogReg     paper_merge 75     52    0.633       0.039          0.497          0.754   0.773         0.587             0.173                     0.096
+RandomForest     paper_merge 75     52    0.704       0.040          0.568          0.827   0.826         0.630             0.162                     0.043
+     kNN-DTW     paper_merge 75     52    0.741       0.034          0.603          0.856   0.830         0.689             0.381                     0.157
+     FIH-kNN     paper_merge 75     52    0.678       0.007          0.556          0.805   0.806         0.584             0.285                     0.104
+      FIH-LR     paper_merge 75     52    0.636       0.039          0.509          0.760   0.776         0.592             0.069                     0.070
+      LogReg    drop_partial 49     26    0.729       0.024          0.606          0.845   0.749         0.640             0.338                     0.104
+RandomForest    drop_partial 49     26    0.826       0.031          0.713          0.920   0.862         0.699             0.462                     0.087
+     kNN-DTW    drop_partial 49     26    0.855       0.013          0.743          0.957   0.818         0.803             0.408                     0.104
+     FIH-kNN    drop_partial 49     26    0.759       0.031          0.606          0.881   0.735         0.691             0.285                     0.096
+      FIH-LR    drop_partial 49     26    0.700       0.030          0.555          0.825   0.699         0.690             0.131                     0.043
+
+permutation_test:
+  model  observed_auc  null_mean  null_sd  null_p95  p_value  n_perm
+ LogReg         0.740      0.546    0.079     0.669    0.007    1000
+kNN-DTW         0.859      0.539    0.082     0.676    0.001    1000
+FIH-kNN         0.693      0.503    0.090     0.643    0.015    1000
+ FIH-LR         0.630      0.513    0.089     0.657    0.091    1000
+
+Next: python scripts/06_session_shift.py

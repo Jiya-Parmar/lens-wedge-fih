@@ -1,0 +1,24 @@
+Threshold summary (sweep = optimistic, nested = honest):
+        model  sweep_tau_ba  sweep_best_ba  nested_tau_ba_median  nested_ba  optimism_ba  sweep_tau_safe  sweep_sens_at_safe  nested_sens_at_safe  nested_fsr_at_safe
+SingleFeature         0.410          0.738                 0.470      0.665        0.073           0.680               0.308                0.223               0.120
+       LogReg         0.420          0.718                 0.480      0.659        0.059           0.710               0.269                0.315               0.133
+ RandomForest         0.300          0.748                 0.350      0.704        0.045           0.540               0.462                0.450               0.094
+      SVM-RBF         0.290          0.738                 0.350      0.626        0.112           0.520               0.308                0.285               0.102
+      kNN-DTW         0.340          0.862                 0.350      0.782        0.079           0.420               0.615                0.585               0.092
+      FIH-kNN         0.170          0.686                 0.245      0.627        0.059           0.590               0.231                0.227               0.108
+       FIH-LR         0.470          0.697                 0.480      0.641        0.056           0.650               0.077                0.154               0.108
+         FIHV         0.390          0.691                 0.360      0.630        0.060           0.650               0.154                0.200               0.114
+
+Minimum expected cost per trial by cost ratio (false-seated : false-reject):
+        model  tau_min_cost_ratio_1  tau_min_cost_ratio_2  tau_min_cost_ratio_3  tau_min_cost_ratio_5  tau_min_cost_ratio_10  min_cost_ratio_1  min_cost_ratio_2  min_cost_ratio_3  min_cost_ratio_5  min_cost_ratio_10
+SingleFeature                 0.540                 0.680                 0.970                 0.970                  0.970             0.267             0.320             0.347             0.347              0.347
+       LogReg                 0.540                 0.720                 0.840                 0.840                  0.840             0.293             0.347             0.347             0.347              0.347
+ RandomForest                 0.580                 0.580                 0.580                 0.580                  0.650             0.213             0.227             0.240             0.267              0.280
+      SVM-RBF                 0.540                 0.540                 0.540                 0.800                  0.800             0.267             0.293             0.320             0.347              0.347
+      kNN-DTW                 0.340                 0.360                 0.500                 0.630                  0.910             0.133             0.200             0.253             0.293              0.333
+      FIH-kNN                 0.600                 0.750                 0.750                 0.750                  0.750             0.307             0.320             0.320             0.320              0.320
+       FIH-LR                 0.720                 0.720                 0.720                 0.720                  0.720             0.320             0.320             0.320             0.320              0.320
+         FIHV                 0.680                 0.680                 0.680                 0.680                  0.680             0.307             0.307             0.307             0.307              0.307
+(Reference: 'always reject' costs 0.347 per trial at every ratio, but it never assembles a lens; see README note on the cost model.)
+
+Detailed figure for kNN-DTW saved. Next: python scripts/05_ablations.py

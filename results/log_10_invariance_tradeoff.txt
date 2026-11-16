@@ -1,0 +1,26 @@
+  lam=0.0  random-CV 0.656  within 0.653  cross 0.698  cross BA 0.642
+  lam=0.1  random-CV 0.655  within 0.651  cross 0.696  cross BA 0.641
+  lam=0.2  random-CV 0.672  within 0.666  cross 0.692  cross BA 0.663
+  lam=0.3  random-CV 0.727  within 0.715  cross 0.681  cross BA 0.658
+  lam=0.4  random-CV 0.763  within 0.752  cross 0.580  cross BA 0.571
+  lam=0.5  random-CV 0.792  within 0.779  cross 0.572  cross BA 0.589
+  lam=0.6  random-CV 0.809  within 0.792  cross 0.608  cross BA 0.551
+  lam=0.7  random-CV 0.817  within 0.805  cross 0.587  cross BA 0.482
+  lam=0.8  random-CV 0.834  within 0.820  cross 0.584  cross BA 0.501
+  lam=0.9  random-CV 0.843  within 0.834  cross 0.522  cross BA 0.492
+  lam=1.0  random-CV 0.848  within 0.849  cross 0.479  cross BA 0.500
+
+  lam  random_cv_auc  within_session_auc  cross_auc_train_20260807  cross_auc_train_20260810  cross_auc_mean  cross_ba_mean
+0.000          0.656               0.653                     0.695                     0.700           0.698          0.642
+0.100          0.655               0.651                     0.692                     0.700           0.696          0.641
+0.200          0.672               0.666                     0.689                     0.694           0.692          0.663
+0.300          0.727               0.715                     0.683                     0.680           0.681          0.658
+0.400          0.763               0.752                     0.645                     0.515           0.580          0.571
+0.500          0.792               0.779                     0.672                     0.472           0.572          0.589
+0.600          0.809               0.792                     0.716                     0.500           0.608          0.551
+0.700          0.817               0.805                     0.674                     0.500           0.587          0.482
+0.800          0.834               0.820                     0.695                     0.472           0.584          0.501
+0.900          0.843               0.834                     0.625                     0.419           0.522          0.492
+1.000          0.848               0.849                     0.513                     0.444           0.479          0.500
+
+Next: python scripts/11_svm_platt_check.py

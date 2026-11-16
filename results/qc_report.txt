@@ -1,0 +1,55 @@
+DATA QUALITY REPORT
+============================================================
+Trials: 75  (one CSV = one trial = one wedge attempt)
+
+Class x session counts:
+label3    failure  partial_contact  success  All
+session                                         
+20260807        7               11       15   33
+20260810       16               15       11   42
+All            23               26       26   75
+
+Binary target (1 = success/seated, 0 = failure or partial_contact):
+y          0   1  All
+session              
+20260807  18  15   33
+20260810  31  11   42
+All       49  26   75
+
+Samples per trial: median 1637, min 1346, max 4917
+Logging gaps > 20 ms per trial: median 29; max gap median 0.295 s
+Bursts per trial: wedge median 14, hold median 16
+Wedge duration s: median 4.26, range [3.52, 25.50]
+Hold duration s: median 4.72, range [3.09, 5.00]
+Wedge duration by session (s):
+              mean       min        max
+session                                
+20260807  5.387733  4.082335  25.500100
+20260810  4.020623  3.521073   4.655145
+
+Wedge-duration outliers (kept, flagged): [{'trial_id': '20260807_222316', 'label3': 'partial_contact', 'wedge_dur_s': 25.500099658966064}]
+Controller settings constant: Fhard=[10.], Fsoft=[6.], speed=[1.]
+Duplicate timestamps total: 0
+
+Features built: 83 (groups: W=20, H=47, X=4, V=7, P=5)
+FIH invariant statistics: 14; FIH signature shape per trial: 15 points x 2 channels (a, l)
+Feature cells that are NaN: 0
+
+Columns excluded from modelling and why:
+  label              the target itself (direct leakage)
+  wedge_succeeded    constant True in every trial, carries no information
+  trial_id           timestamp, identifies session
+  experiment         constant
+  attempt            always 1
+  rim_pos_x          constant within a session, identifies session perfectly
+  rim_pos_y          constant within a session, identifies session perfectly
+  rim_pos_z          constant within a session, identifies session perfectly
+  wedge_target_x     constant within a session, identifies session perfectly
+  wedge_target_y     constant within a session, identifies session perfectly
+  wedge_target_z     constant within a session, identifies session perfectly
+  fz_hard_limit      constant controller setting
+  fz_soft_limit      constant controller setting
+  speed_wedge_mm_s   constant controller setting
+  x                  absolute pose, fixture/session coupled
+  y                  absolute pose, fixture/session coupled
+  z                  absolute pose, fixture/session coupled

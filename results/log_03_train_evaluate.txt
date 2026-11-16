@@ -1,0 +1,147 @@
+  computing dtw_matrix.npz (one time) ...
+  computing dtw_fih_matrix.npz (one time) ...
+n=75 trials, seated=26, not seated=49, features=78 (groups ['W', 'H', 'X', 'V']), FIH statistics=14
+  running Prior ...
+    Prior         repeat 1/10 done
+    Prior         repeat 2/10 done
+    Prior         repeat 3/10 done
+    Prior         repeat 4/10 done
+    Prior         repeat 5/10 done
+    Prior         repeat 6/10 done
+    Prior         repeat 7/10 done
+    Prior         repeat 8/10 done
+    Prior         repeat 9/10 done
+    Prior         repeat 10/10 done
+    Prior finished in 0.2 s
+  running SingleFeature ...
+    SingleFeature repeat 1/10 done
+    SingleFeature repeat 2/10 done
+    SingleFeature repeat 3/10 done
+    SingleFeature repeat 4/10 done
+    SingleFeature repeat 5/10 done
+    SingleFeature repeat 6/10 done
+    SingleFeature repeat 7/10 done
+    SingleFeature repeat 8/10 done
+    SingleFeature repeat 9/10 done
+    SingleFeature repeat 10/10 done
+    SingleFeature finished in 19.5 s
+  running LogReg ...
+    LogReg        repeat 1/10 done
+    LogReg        repeat 2/10 done
+    LogReg        repeat 3/10 done
+    LogReg        repeat 4/10 done
+    LogReg        repeat 5/10 done
+    LogReg        repeat 6/10 done
+    LogReg        repeat 7/10 done
+    LogReg        repeat 8/10 done
+    LogReg        repeat 9/10 done
+    LogReg        repeat 10/10 done
+    LogReg finished in 8.1 s
+  running RandomForest ...
+    RandomForest  repeat 1/10 done
+    RandomForest  repeat 2/10 done
+    RandomForest  repeat 3/10 done
+    RandomForest  repeat 4/10 done
+    RandomForest  repeat 5/10 done
+    RandomForest  repeat 6/10 done
+    RandomForest  repeat 7/10 done
+    RandomForest  repeat 8/10 done
+    RandomForest  repeat 9/10 done
+    RandomForest  repeat 10/10 done
+    RandomForest finished in 84.6 s
+  running SVM-RBF ...
+    SVM-RBF       repeat 1/10 done
+    SVM-RBF       repeat 2/10 done
+    SVM-RBF       repeat 3/10 done
+    SVM-RBF       repeat 4/10 done
+    SVM-RBF       repeat 5/10 done
+    SVM-RBF       repeat 6/10 done
+    SVM-RBF       repeat 7/10 done
+    SVM-RBF       repeat 8/10 done
+    SVM-RBF       repeat 9/10 done
+    SVM-RBF       repeat 10/10 done
+    SVM-RBF finished in 15.6 s
+  running kNN-DTW ...
+    kNN-DTW       repeat 1/10 done
+    kNN-DTW       repeat 2/10 done
+    kNN-DTW       repeat 3/10 done
+    kNN-DTW       repeat 4/10 done
+    kNN-DTW       repeat 5/10 done
+    kNN-DTW       repeat 6/10 done
+    kNN-DTW       repeat 7/10 done
+    kNN-DTW       repeat 8/10 done
+    kNN-DTW       repeat 9/10 done
+    kNN-DTW       repeat 10/10 done
+    kNN-DTW finished in 2.0 s
+  running FIH-kNN ...
+    FIH-kNN       repeat 1/10 done
+    FIH-kNN       repeat 2/10 done
+    FIH-kNN       repeat 3/10 done
+    FIH-kNN       repeat 4/10 done
+    FIH-kNN       repeat 5/10 done
+    FIH-kNN       repeat 6/10 done
+    FIH-kNN       repeat 7/10 done
+    FIH-kNN       repeat 8/10 done
+    FIH-kNN       repeat 9/10 done
+    FIH-kNN       repeat 10/10 done
+    FIH-kNN finished in 1.9 s
+  running FIH-LR ...
+    FIH-LR        repeat 1/10 done
+    FIH-LR        repeat 2/10 done
+    FIH-LR        repeat 3/10 done
+    FIH-LR        repeat 4/10 done
+    FIH-LR        repeat 5/10 done
+    FIH-LR        repeat 6/10 done
+    FIH-LR        repeat 7/10 done
+    FIH-LR        repeat 8/10 done
+    FIH-LR        repeat 9/10 done
+    FIH-LR        repeat 10/10 done
+    FIH-LR finished in 6.8 s
+  running FIHV ...
+    FIHV          repeat 1/10 done
+    FIHV          repeat 2/10 done
+    FIHV          repeat 3/10 done
+    FIHV          repeat 4/10 done
+    FIHV          repeat 5/10 done
+    FIHV          repeat 6/10 done
+    FIHV          repeat 7/10 done
+    FIHV          repeat 8/10 done
+    FIHV          repeat 9/10 done
+    FIHV          repeat 10/10 done
+    FIHV finished in 17.1 s
+
+MAIN RESULTS (nested CV, mean over repeats; CI = trial bootstrap)
+prevalence of seated = 0.347 (this is the PR-AUC of a random scorer)
+        model  roc_auc_mean  roc_auc_sd  roc_auc_ci_lo  roc_auc_ci_hi  pr_auc_mean  brier_mean  ba_at_tau_ba_mean  false_seated_at_tau_ba_mean  sens_at_tau_safe_mean  false_seated_at_tau_safe_mean
+        Prior         0.476       0.000          0.444          0.508        0.336       0.227              0.500                        0.000                  0.000                          0.000
+SingleFeature         0.706       0.052          0.594          0.806        0.545       0.223              0.665                        0.320                  0.223                          0.120
+       LogReg         0.720       0.020          0.619          0.813        0.539       0.224              0.659                        0.386                  0.315                          0.133
+ RandomForest         0.804       0.038          0.705          0.887        0.709       0.168              0.704                        0.343                  0.450                          0.094
+      SVM-RBF         0.710       0.037          0.609          0.806        0.562       0.206              0.626                        0.251                  0.285                          0.102
+      kNN-DTW         0.855       0.024          0.765          0.927        0.751       0.150              0.782                        0.178                  0.585                          0.092
+      FIH-kNN         0.675       0.036          0.560          0.782        0.517       0.224              0.627                        0.447                  0.227                          0.108
+       FIH-LR         0.667       0.049          0.561          0.767        0.491       0.244              0.641                        0.537                  0.154                          0.108
+         FIHV         0.675       0.034          0.561          0.779        0.499       0.215              0.630                        0.451                  0.200                          0.114
+
+SingleFeature baseline picked:
+                   feature  n_folds
+           H__fy_resid_std       36
+        H__stiff_fz_per_mm        5
+X__fz_hold_minus_wedge_end        3
+          H__fy_late_slope        3
+               H__fz_delta        1
+               H__fz_slope        1
+             H__fy_tv_rate        1
+
+Paired AUC differences vs SingleFeature baseline:
+     model_a       model_b   diff     lo     hi  p_greater
+       Prior SingleFeature -0.230 -0.329 -0.118      0.000
+      LogReg SingleFeature  0.014 -0.068  0.095      0.608
+RandomForest SingleFeature  0.098  0.019  0.177      0.992
+     SVM-RBF SingleFeature  0.004 -0.104  0.108      0.517
+     kNN-DTW SingleFeature  0.149  0.031  0.268      0.989
+     FIH-kNN SingleFeature -0.031 -0.144  0.081      0.290
+      FIH-LR SingleFeature -0.039 -0.127  0.052      0.188
+        FIHV SingleFeature -0.031 -0.139  0.075      0.273
+
+Saved to /home/jiya/lens-wedge-fih/results. Next: python scripts/04_threshold_sweep.py

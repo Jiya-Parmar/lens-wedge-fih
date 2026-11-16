@@ -1,0 +1,32 @@
+Top 15 features by single-feature separability (descriptive, all data):
+                     feature  auc_label  mw_p  auc_session
+             H__fy_resid_std      0.805 0.000        0.581
+               H__fy_tv_rate      0.777 0.000        0.618
+  X__fz_hold_minus_wedge_end      0.761 0.000        0.522
+          H__stiff_fz_per_mm      0.761 0.000        0.518
+                 H__fz_delta      0.756 0.000        0.527
+                 H__fz_slope      0.750 0.000        0.519
+            H__fy_late_slope      0.732 0.001        0.519
+            H__fx_late_slope      0.728 0.001        0.765
+X__fmag_hold_over_wedge_peak      0.717 0.002        0.582
+               H__fmag_slope      0.700 0.005        0.538
+               H__fmag_delta      0.699 0.005        0.557
+   X__fz_std_hold_over_wedge      0.681 0.011        0.839
+                 H__fy_range      0.679 0.011        0.633
+                   W__fy_std      0.677 0.012        0.770
+       H__fz_settle_logratio      0.672 0.015        0.536
+
+Features whose session-AUC exceeds their label-AUC: 63 of 83
+
+Obvious single-quantity proxies:
+                 auc_label  mw_p  auc_session
+feature                                      
+P__max_depth_mm      0.637 0.053        0.544
+W__fz_peakabs        0.575 0.293        0.926
+W__fmag_peakabs      0.614 0.108        0.890
+H__fz_range          0.615 0.103        0.615
+H__fz_std            0.610 0.120        0.601
+H__fz_last           0.575 0.288        0.889
+H__fz_resid_std      0.530 0.676        0.619
+
+Figures written to /home/jiya/lens-wedge-fih/results/figures. Next: python scripts/03_train_evaluate.py

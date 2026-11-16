@@ -1,0 +1,14 @@
+trial_id,outcome,session,y,p_seated,plot_png,error
+20260807_233419,failure,20260807,0,0.9055852197126913,/home/jiya/lens-wedge-fih/data/raw/failure/plots/wedge_failure_20260807_233419.png,false_seated
+20260807_222710,partial_contact,20260807,0,0.6295499381393419,/home/jiya/lens-wedge-fih/data/raw/partial_contact/plots/wedge_partial_contact_20260807_222710.png,false_seated
+20260807_230216,partial_contact,20260807,0,0.49121488552016174,/home/jiya/lens-wedge-fih/data/raw/partial_contact/plots/wedge_partial_contact_20260807_230216.png,false_seated
+20260810_150646,failure,20260810,0,0.4394922071597235,/home/jiya/lens-wedge-fih/data/raw/failure/plots/wedge_failure_20260810_150646.png,false_seated
+20260807_232349,partial_contact,20260807,0,0.41417029924759297,/home/jiya/lens-wedge-fih/data/raw/partial_contact/plots/wedge_partial_contact_20260807_232349.png,false_seated
+20260807_230948,partial_contact,20260807,0,0.35763017806351927,/home/jiya/lens-wedge-fih/data/raw/partial_contact/plots/wedge_partial_contact_20260807_230948.png,false_seated
+20260810_160622,partial_contact,20260810,0,0.3394253016691906,/home/jiya/lens-wedge-fih/data/raw/partial_contact/plots/wedge_partial_contact_20260810_160622.png,false_seated
+20260807_223030,failure,20260807,0,0.3298667486819281,/home/jiya/lens-wedge-fih/data/raw/failure/plots/wedge_failure_20260807_223030.png,false_seated
+20260807_234034,success,20260807,1,0.06578397550859363,/home/jiya/lens-wedge-fih/data/raw/success/plots/wedge_success_20260807_234034.png,false_reject
+20260810_154218,success,20260810,1,0.19734403990700108,/home/jiya/lens-wedge-fih/data/raw/success/plots/wedge_success_20260810_154218.png,false_reject
+20260810_151333,success,20260810,1,0.21649304766237334,/home/jiya/lens-wedge-fih/data/raw/success/plots/wedge_success_20260810_151333.png,false_reject
+20260810_151207,success,20260810,1,0.29272537831022116,/home/jiya/lens-wedge-fih/data/raw/success/plots/wedge_success_20260810_151207.png,false_reject
+20260807_232927,success,20260807,1,0.34679405044297595,/home/jiya/lens-wedge-fih/data/raw/success/plots/wedge_success_20260807_232927.png,false_reject

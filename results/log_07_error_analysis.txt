@@ -1,0 +1,93 @@
+Fraction of trials called 'seated' by recorded outcome (success row = sensitivity;
+failure and partial rows = false-seated rate for that subtype):
+outcome                 failure  partial_contact  success
+model         rule                                       
+FIH-LR        tau_ba      0.509            0.562    0.819
+              tau_safe    0.143            0.077    0.154
+FIH-kNN       tau_ba      0.357            0.527    0.700
+              tau_safe    0.083            0.131    0.227
+FIHV          tau_ba      0.404            0.492    0.712
+              tau_safe    0.100            0.127    0.200
+LogReg        tau_ba      0.417            0.358    0.704
+              tau_safe    0.100            0.162    0.315
+RandomForest  tau_ba      0.300            0.381    0.750
+              tau_safe    0.078            0.108    0.450
+SVM-RBF       tau_ba      0.200            0.296    0.504
+              tau_safe    0.091            0.112    0.285
+SingleFeature tau_ba      0.274            0.362    0.650
+              tau_safe    0.122            0.119    0.223
+kNN-DTW       tau_ba      0.139            0.212    0.742
+              tau_safe    0.078            0.104    0.585
+
+Calibration (slope 1 and intercept 0 are perfect; slope < 1 means over-confident):
+        model  brier  brier_prior_only  calib_intercept  calib_slope  mean_pred  observed_rate
+SingleFeature  0.208             0.226           -0.628        0.889      0.476          0.347
+       LogReg  0.206             0.226           -0.596        1.133      0.470          0.347
+ RandomForest  0.164             0.226            0.133        1.616      0.368          0.347
+      SVM-RBF  0.190             0.226            0.076        1.155      0.348          0.347
+      kNN-DTW  0.140             0.226            0.389        1.309      0.316          0.347
+      FIH-kNN  0.216             0.226           -0.114        0.451      0.317          0.347
+       FIH-LR  0.233             0.226           -0.625        1.174      0.489          0.347
+         FIHV  0.210             0.226           -0.281        0.930      0.400          0.347
+
+Most confident mistakes of kNN-DTW (open the PNG to inspect the raw trial):
+       error        trial_id         outcome  session  p_seated
+false_seated 20260807_233419         failure 20260807     0.906
+false_seated 20260807_222710 partial_contact 20260807     0.630
+false_seated 20260807_230216 partial_contact 20260807     0.491
+false_seated 20260810_150646         failure 20260810     0.439
+false_seated 20260807_232349 partial_contact 20260807     0.414
+false_seated 20260807_230948 partial_contact 20260807     0.358
+false_seated 20260810_160622 partial_contact 20260810     0.339
+false_seated 20260807_223030         failure 20260807     0.330
+false_reject 20260807_234034         success 20260807     0.066
+false_reject 20260810_154218         success 20260810     0.197
+false_reject 20260810_151333         success 20260810     0.216
+false_reject 20260810_151207         success 20260810     0.293
+false_reject 20260807_232927         success 20260807     0.347
+
+LogReg (C=0.01) largest standardised coefficients, positive = pushes towards 'seated':
+                     feature   coef
+             H__fy_resid_std  0.098
+               H__fy_tv_rate  0.083
+            H__fy_late_slope -0.079
+  X__fz_hold_minus_wedge_end  0.065
+            H__fx_late_slope  0.065
+          H__stiff_fz_per_mm  0.063
+                 H__fz_slope  0.061
+                 H__fz_delta  0.059
+               W__fy_peakabs  0.053
+                 H__fy_range  0.052
+                  H__fx_mean -0.048
+X__fmag_hold_over_wedge_peak -0.048
+
+FIH-LR (C=0.003) standardised coefficients, positive = pushes towards 'seated':
+          feature   coef
+     FIH__a_slope  0.042
+       FIH__a_end  0.041
+       FIH__a_min  0.036
+      FIH__l_path  0.025
+   FIH__a_recover  0.023
+     FIH__a_range -0.023
+     FIH__l_resid  0.022
+       FIH__l_max  0.015
+     FIH__l_drift  0.011
+      FIH__l_mean  0.010
+       FIH__l_end  0.004
+        FIH__a_tv -0.004
+FIH__a_late_slope -0.004
+     FIH__a_resid  0.001
+
+Hyperparameters chosen across outer folds (stability check):
+  LogReg        param_clf__C                 {'0.001': 12, '0.03': 9, '0.003': 8, '0.1': 7, '0.01': 6, '0.3': 4, '1.0': 4}
+  RandomForest  param_clf__max_depth         {'nan': 30, '3.0': 20}
+  RandomForest  param_clf__min_samples_leaf  {'1.0': 39, '4.0': 11}
+  SVM-RBF       param_clf__C                 {'10.0': 22, '1.0': 16, '0.1': 12}
+  SVM-RBF       param_clf__gamma             {'0.03': 22, '0.01': 12, 'scale': 9, '0.003': 7}
+  kNN-DTW       param_n_neighbors            {'5.0': 17, '7.0': 16, '9.0': 8, '3.0': 6, '11.0': 3}
+  FIH-kNN       param_n_neighbors            {'7.0': 23, '5.0': 13, '9.0': 10, '11.0': 2, '3.0': 2}
+  FIH-LR        param_clf__C                 {'0.001': 20, '1.0': 8, '0.003': 6, '0.03': 5, '0.3': 5, '0.1': 4, '0.01': 2}
+  FIHV          param_C                      {'0.001': 16, '0.1': 12, '0.3': 7, '0.01': 6, '0.003': 4, '1.0': 3, '0.03': 2}
+  FIHV          param_k                      {'7.0': 17, '3.0': 12, '5.0': 10, '9.0': 6, '11.0': 5}
+
+All steps finished. Share the printed outputs and the results/ folder.

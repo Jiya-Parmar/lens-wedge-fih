@@ -1,0 +1,8 @@
+feature,n_folds
+H__fy_resid_std,36
+H__stiff_fz_per_mm,5
+X__fz_hold_minus_wedge_end,3
+H__fy_late_slope,3
+H__fz_delta,1
+H__fz_slope,1
+H__fy_tv_rate,1

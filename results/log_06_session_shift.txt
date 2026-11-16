@@ -1,0 +1,82 @@
+  computing DTW on session-centred traces ...
+Session priors (fraction seated): {'20260807': 0.455, '20260810': 0.262}
+  20260807->20260810 raw         SingleFeature AUC 0.762 [0.59,0.91]  BA 0.764  sens@safe 0.18  FSR@safe 0.13
+  20260807->20260810 raw         LogReg        AUC 0.686 [0.53,0.84]  BA 0.494  sens@safe 0.00  FSR@safe 0.00
+  20260807->20260810 raw         RandomForest  AUC 0.713 [0.53,0.87]  BA 0.500  sens@safe 0.00  FSR@safe 0.00
+  20260807->20260810 raw         SVM-RBF       AUC 0.672 [0.51,0.83]  BA 0.452  sens@safe 0.00  FSR@safe 0.00
+  20260807->20260810 raw         kNN-DTW       AUC 0.513 [0.32,0.69]  BA 0.500  sens@safe 0.00  FSR@safe 0.00
+  20260807->20260810 raw         FIH-kNN       AUC 0.695 [0.51,0.85]  BA 0.651  sens@safe 0.36  FSR@safe 0.16
+  20260807->20260810 raw         FIH-LR        AUC 0.716 [0.56,0.87]  BA 0.638  sens@safe 0.00  FSR@safe 0.06
+  20260807->20260810 raw         FIHV          AUC 0.733 [0.57,0.88]  BA 0.664  sens@safe 0.09  FSR@safe 0.03
+  20260807->20260810 session_std SingleFeature AUC 0.762 [0.59,0.91]  BA 0.777  sens@safe 0.36  FSR@safe 0.13
+  20260807->20260810 session_std LogReg        AUC 0.660 [0.50,0.82]  BA 0.713  sens@safe 0.00  FSR@safe 0.13
+  20260807->20260810 session_std RandomForest  AUC 0.716 [0.52,0.88]  BA 0.614  sens@safe 0.00  FSR@safe 0.03
+  20260807->20260810 session_std SVM-RBF       AUC 0.789 [0.62,0.93]  BA 0.713  sens@safe 0.09  FSR@safe 0.06
+  20260807->20260810 session_std kNN-DTW       AUC 0.724 [0.57,0.88]  BA 0.629  sens@safe 0.64  FSR@safe 0.32
+  20260810->20260807 raw         SingleFeature AUC 0.641 [0.46,0.83]  BA 0.500  sens@safe 0.00  FSR@safe 0.00
+  20260810->20260807 raw         LogReg        AUC 0.522 [0.32,0.73]  BA 0.500  sens@safe 0.00  FSR@safe 0.00
+  20260810->20260807 raw         RandomForest  AUC 0.652 [0.44,0.84]  BA 0.500  sens@safe 0.00  FSR@safe 0.00
+  20260810->20260807 raw         SVM-RBF       AUC 0.604 [0.39,0.81]  BA 0.689  sens@safe 0.00  FSR@safe 0.00
+  20260810->20260807 raw         kNN-DTW       AUC 0.444 [0.37,0.50]  BA 0.500  sens@safe 0.00  FSR@safe 0.00
+  20260810->20260807 raw         FIH-kNN       AUC 0.700 [0.52,0.86]  BA 0.633  sens@safe 0.33  FSR@safe 0.06
+  20260810->20260807 raw         FIH-LR        AUC 0.804 [0.65,0.94]  BA 0.611  sens@safe 0.13  FSR@safe 0.00
+  20260810->20260807 raw         FIHV          AUC 0.670 [0.48,0.84]  BA 0.656  sens@safe 0.13  FSR@safe 0.06
+  20260810->20260807 session_std SingleFeature AUC 0.641 [0.46,0.83]  BA 0.594  sens@safe 0.13  FSR@safe 0.17
+  20260810->20260807 session_std LogReg        AUC 0.674 [0.45,0.88]  BA 0.656  sens@safe 0.47  FSR@safe 0.11
+  20260810->20260807 session_std RandomForest  AUC 0.633 [0.39,0.85]  BA 0.706  sens@safe 0.53  FSR@safe 0.06
+  20260810->20260807 session_std SVM-RBF       AUC 0.770 [0.55,0.94]  BA 0.728  sens@safe 0.73  FSR@safe 0.11
+  20260810->20260807 session_std kNN-DTW       AUC 0.735 [0.57,0.89]  BA 0.728  sens@safe 0.73  FSR@safe 0.28
+
+Mean over the two directions:
+    variant         model  roc_auc  ba_at_tau_ba  sens_at_tau_safe  false_seated_at_tau_safe  random_cv_auc  auc_drop_vs_random_cv
+        raw SingleFeature    0.702         0.632             0.091                     0.065          0.706                  0.004
+        raw        LogReg    0.604         0.497             0.000                     0.000          0.720                  0.116
+        raw  RandomForest    0.682         0.500             0.000                     0.000          0.804                  0.122
+        raw       SVM-RBF    0.638         0.570             0.000                     0.000          0.710                  0.072
+        raw       kNN-DTW    0.479         0.500             0.000                     0.000          0.855                  0.376
+        raw       FIH-kNN    0.698         0.642             0.348                     0.108          0.675                 -0.023
+        raw        FIH-LR    0.760         0.624             0.067                     0.032          0.667                 -0.093
+        raw          FIHV    0.702         0.660             0.112                     0.044          0.675                 -0.027
+session_std SingleFeature    0.702         0.686             0.248                     0.148          0.706                  0.004
+session_std        LogReg    0.667         0.684             0.233                     0.120          0.720                  0.053
+session_std  RandomForest    0.674         0.660             0.267                     0.044          0.804                  0.129
+session_std       SVM-RBF    0.780         0.720             0.412                     0.088          0.710                 -0.070
+session_std       kNN-DTW    0.730         0.678             0.685                     0.300          0.855                  0.125
+
+Cross-session AUC per direction (raw):
+train          20260807  20260810
+model                            
+FIH-LR            0.716     0.804
+FIH-kNN           0.695     0.700
+FIHV              0.733     0.670
+LogReg            0.686     0.522
+RandomForest      0.713     0.652
+SVM-RBF           0.672     0.604
+SingleFeature     0.762     0.641
+kNN-DTW           0.513     0.444
+
+Paired bootstrap of cross-session AUC differences (2000 resamples per direction):
+model_a       model_b   diff     lo    hi  p_greater
+FIH-kNN SingleFeature -0.004 -0.173 0.163      0.490
+FIH-kNN        LogReg  0.093 -0.050 0.234      0.897
+FIH-kNN  RandomForest  0.015 -0.105 0.140      0.614
+FIH-kNN       SVM-RBF  0.060 -0.108 0.225      0.769
+FIH-kNN       kNN-DTW  0.219  0.050 0.387      0.992
+FIH-kNN        FIH-LR -0.062 -0.188 0.048      0.157
+FIH-kNN          FIHV -0.004 -0.069 0.063      0.457
+ FIH-LR SingleFeature  0.058 -0.082 0.212      0.781
+ FIH-LR        LogReg  0.155  0.026 0.288      0.993
+ FIH-LR  RandomForest  0.077 -0.035 0.204      0.910
+ FIH-LR       SVM-RBF  0.122  0.008 0.244      0.983
+ FIH-LR       kNN-DTW  0.281  0.136 0.428      1.000
+ FIH-LR       FIH-kNN  0.062 -0.048 0.188      0.844
+ FIH-LR          FIHV  0.058 -0.034 0.168      0.882
+   FIHV SingleFeature  0.000 -0.156 0.164      0.497
+   FIHV        LogReg  0.098 -0.041 0.233      0.914
+   FIHV  RandomForest  0.020 -0.097 0.135      0.643
+   FIHV       SVM-RBF  0.064 -0.092 0.214      0.799
+   FIHV       kNN-DTW  0.223  0.059 0.382      0.997
+   FIHV       FIH-kNN  0.004 -0.063 0.069      0.542
+   FIHV        FIH-LR -0.058 -0.168 0.034      0.117
+
+Next: python scripts/07_error_analysis.py

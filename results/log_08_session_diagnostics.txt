@@ -1,0 +1,65 @@
+1. Random-CV scores ranked only within each session (session identity cannot help):
+        model  pooled_auc  within_20260807  within_20260810  within_mean
+        Prior       0.476            0.483            0.460        0.472
+SingleFeature       0.706            0.776            0.639        0.707
+       LogReg       0.720            0.705            0.693        0.699
+ RandomForest       0.804            0.789            0.800        0.795
+      SVM-RBF       0.710            0.620            0.745        0.682
+      kNN-DTW       0.855            0.823            0.885        0.854
+      FIH-kNN       0.675            0.696            0.654        0.675
+       FIH-LR       0.667            0.706            0.620        0.663
+         FIHV       0.675            0.721            0.624        0.673
+   W only        raw         SingleFeature mean cross-session AUC 0.492
+   W only        raw         LogReg        mean cross-session AUC 0.386
+   W only        raw         RandomForest  mean cross-session AUC 0.455
+   W only        raw         SVM-RBF       mean cross-session AUC 0.320
+   W only        session_std SingleFeature mean cross-session AUC 0.492
+   W only        session_std LogReg        mean cross-session AUC 0.426
+   W only        session_std RandomForest  mean cross-session AUC 0.373
+   W only        session_std SVM-RBF       mean cross-session AUC 0.535
+   H only        raw         SingleFeature mean cross-session AUC 0.702
+   H only        raw         LogReg        mean cross-session AUC 0.667
+   H only        raw         RandomForest  mean cross-session AUC 0.732
+   H only        raw         SVM-RBF       mean cross-session AUC 0.687
+   H only        session_std SingleFeature mean cross-session AUC 0.702
+   H only        session_std LogReg        mean cross-session AUC 0.716
+   H only        session_std RandomForest  mean cross-session AUC 0.772
+   H only        session_std SVM-RBF       mean cross-session AUC 0.725
+   H+X           raw         SingleFeature mean cross-session AUC 0.702
+   H+X           raw         LogReg        mean cross-session AUC 0.702
+   H+X           raw         RandomForest  mean cross-session AUC 0.732
+   H+X           raw         SVM-RBF       mean cross-session AUC 0.709
+   H+X           session_std SingleFeature mean cross-session AUC 0.702
+   H+X           session_std LogReg        mean cross-session AUC 0.714
+   H+X           session_std RandomForest  mean cross-session AUC 0.778
+   H+X           session_std SVM-RBF       mean cross-session AUC 0.732
+   MAIN W+H+X+V  raw         SingleFeature mean cross-session AUC 0.702
+   MAIN W+H+X+V  raw         LogReg        mean cross-session AUC 0.604
+   MAIN W+H+X+V  raw         RandomForest  mean cross-session AUC 0.682
+   MAIN W+H+X+V  raw         SVM-RBF       mean cross-session AUC 0.638
+   MAIN W+H+X+V  session_std SingleFeature mean cross-session AUC 0.702
+   MAIN W+H+X+V  session_std LogReg        mean cross-session AUC 0.667
+   MAIN W+H+X+V  session_std RandomForest  mean cross-session AUC 0.674
+   MAIN W+H+X+V  session_std SVM-RBF       mean cross-session AUC 0.780
+   FIH           raw         SingleFeature mean cross-session AUC 0.770
+   FIH           raw         LogReg        mean cross-session AUC 0.760
+   FIH           raw         RandomForest  mean cross-session AUC 0.654
+   FIH           raw         SVM-RBF       mean cross-session AUC 0.704
+   FIH           session_std SingleFeature mean cross-session AUC 0.770
+   FIH           session_std LogReg        mean cross-session AUC 0.758
+   FIH           session_std RandomForest  mean cross-session AUC 0.707
+   FIH           session_std SVM-RBF       mean cross-session AUC 0.697
+
+2. Cross-session AUC (mean of both directions) by feature group:
+model                     SingleFeature  LogReg  RandomForest  SVM-RBF
+variant     feature_set                                               
+raw         W only                0.492   0.386         0.455    0.320
+            H only                0.702   0.667         0.732    0.687
+            H+X                   0.702   0.702         0.732    0.709
+            MAIN W+H+X+V          0.702   0.604         0.682    0.638
+            FIH                   0.770   0.760         0.654    0.704
+session_std W only                0.492   0.426         0.373    0.535
+            H only                0.702   0.716         0.772    0.725
+            H+X                   0.702   0.714         0.778    0.732
+            MAIN W+H+X+V          0.702   0.667         0.674    0.780
+            FIH                   0.770   0.758         0.707    0.697

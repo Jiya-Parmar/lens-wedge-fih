@@ -1,0 +1,8 @@
+# private trial recordings and everything derived from them per trial
+data/raw/*
+!data/raw/.keep
+data/processed/*
+!data/processed/.keep
+.venv/
+__pycache__/
+*.pyc

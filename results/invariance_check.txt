@@ -1,0 +1,6 @@
+Exact invariance check: every trial gets a random yaw ~ U(0, 360) deg and an offset
+~ N(0, 2^2) N per axis applied to its raw samples; the whole per-trial pipeline
+(burst averaging, features, resampling) is then rerun.
+  FIH statistics : max absolute change 2.66e-15
+  FIH signatures : max absolute change 3.55e-15 N
+  Standard main features: 62 of 78 change (79%); median over features of the per-feature median relative change 0.37

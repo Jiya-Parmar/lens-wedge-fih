@@ -1,0 +1,4 @@
+variant,auc_train_s1,auc_train_s2,cross_auc_mean
+"raw hold traces (fx, fy, fz)",0.6217008797653959,0.5,0.5608504398826979
+"signed anchored change (dx, dy, dz)",0.6539589442815249,0.7203703703703703,0.6871646573259476
+"FIH signature (a, l)",0.6950146627565983,0.7,0.6975073313782991
